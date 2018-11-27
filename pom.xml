@@ -69,6 +69,14 @@
         <latest.jolt.version>0.1.1</latest.jolt.version>
     </properties>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter</name>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <profiles>
         <profile>
             <id>default</id>
@@ -529,7 +537,7 @@
             <plugin>
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
-                <version>0.9.15</version>
+                <version>0.9.17</version>
                 <executions>
                     <execution>
                         <phase>prepare-package</phase>
