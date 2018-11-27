@@ -24,10 +24,15 @@
     <version>0.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>rabbit-amazon-bridge</name>
+    <name>${project.artifactId}</name>
+    <description>A general purpose service that route rabbit messages to services running in Amazon Web Services.</description>
+    <url>https://github.com/tyro/rabbit-amazon-bridge</url>
 
     <scm>
         <connection>scm:git:https://github.com/tyro/rabbit-amazon-bridge.git</connection>
+        <developerConnection>scm:git:https://github.com/tyro/rabbit-amazon-bridge.git</developerConnection>
+        <url>https://github.com/tyro/rabbit-amazon-bridge</url>
+        <tag>HEAD</tag>
     </scm>
 
     <parent>
@@ -35,6 +40,21 @@
         <artifactId>platform-bom</artifactId>
         <version>Cairo-SR3</version>
     </parent>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <email>opensource@tyro.com</email>
+            <organization>Tyro Payments Limited</organization>
+            <organizationUrl>https://www.tyro.com</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
@@ -94,117 +114,84 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Kotlin -->
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-jdk8</artifactId>
-                <version>${kotlin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-reflect</artifactId>
-                <version>${kotlin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>13.0</version>
-            </dependency>
-
-            <!-- Third-party dependencies -->
-            <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>javax.mail-api</artifactId>
-                <version>1.6.1</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>javax.mail</artifactId>
-                <version>1.6.1</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.papertrailapp</groupId>
-                <artifactId>logback-syslog4j</artifactId>
-                <version>1.0.0</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-aws</artifactId>
-                <version>${spring-cloud.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-aws-messaging</artifactId>
-                <version>${spring-cloud.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-aws-autoconfigure</artifactId>
-                <version>${spring-cloud.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-aws-core</artifactId>
-                <version>${spring-cloud.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-bom</artifactId>
             </dependency>
-            <dependency>
-                <groupId>com.bazaarvoice.jolt</groupId>
-                <artifactId>jolt-core</artifactId>
-                <version>${latest.jolt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.bazaarvoice.jolt</groupId>
-                <artifactId>json-utils</artifactId>
-                <version>${latest.jolt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-registry-simple</artifactId>
-                <scope>runtime</scope>
-            </dependency>
-
-            <!-- Test dependencies -->
-            <dependency>
-                <groupId>com.tyro.oss</groupId>
-                <artifactId>arbitrater</artifactId>
-                <version>0.0.5</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.tyro.oss</groupId>
-                <artifactId>random-data</artifactId>
-                <version>0.0.2</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.nhaarman</groupId>
-                <artifactId>mockito-kotlin</artifactId>
-                <version>1.6.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-test-junit</artifactId>
-                <version>${kotlin.version}</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
-
     <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>13.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>javax.mail-api</artifactId>
+            <version>1.6.1</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.1</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.papertrailapp</groupId>
+            <artifactId>logback-syslog4j</artifactId>
+            <version>1.0.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-aws</artifactId>
+            <version>${spring-cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-aws-messaging</artifactId>
+            <version>${spring-cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-aws-autoconfigure</artifactId>
+            <version>${spring-cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-aws-core</artifactId>
+            <version>${spring-cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bazaarvoice.jolt</groupId>
+            <artifactId>jolt-core</artifactId>
+            <version>${latest.jolt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bazaarvoice.jolt</groupId>
+            <artifactId>json-utils</artifactId>
+            <version>${latest.jolt.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
@@ -215,39 +202,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-aws-messaging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-aws-autoconfigure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-aws-core</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
         </dependency>
-
-
-        <!-- Kotlin -->
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-reflect</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
-
-        <!-- Spring Framework dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
@@ -257,7 +214,6 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Third-party runtime dependencies -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -326,19 +282,6 @@
             <artifactId>gson</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>javax.mail-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.papertrailapp</groupId>
-            <artifactId>logback-syslog4j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
         </dependency>
@@ -347,20 +290,8 @@
             <artifactId>spring-tx</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.bazaarvoice.jolt</groupId>
-            <artifactId>jolt-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.bazaarvoice.jolt</groupId>
-            <artifactId>json-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
@@ -368,11 +299,6 @@
         </dependency>
 
         <!-- Test dependencies -->
-        <dependency>
-            <groupId>com.tyro.oss</groupId>
-            <artifactId>arbitrater</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -414,26 +340,32 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test-junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-
-        <!-- Test dependencies -->
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.tyro.oss</groupId>
+            <artifactId>arbitrater</artifactId>
+            <version>0.0.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tyro.oss</groupId>
             <artifactId>random-data</artifactId>
+            <version>0.0.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.nhaarman</groupId>
             <artifactId>mockito-kotlin</artifactId>
+            <version>1.6.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test-junit</artifactId>
+            <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -593,6 +525,32 @@
                     <classifier>deployable</classifier>
                     <fork>true</fork>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>0.9.15</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>javadocJar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
