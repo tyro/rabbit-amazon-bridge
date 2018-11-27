@@ -26,9 +26,11 @@ import org.springframework.cloud.aws.core.region.RegionProvider
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 
 @Configuration
+@Profile("!test")
 class AWSSqsConfig {
 
     @Bean
