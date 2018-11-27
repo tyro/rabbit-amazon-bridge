@@ -498,7 +498,7 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.18.1</version>
+                <version>0.27.2</version>
                 <configuration>
                     <images>
                         <image>
@@ -536,6 +536,7 @@
                                 </ports>
                                 <wait>
                                     <tcp>
+                                        <host>127.0.0.1</host>
                                         <ports>
                                             <port>9324</port>
                                         </ports>
