@@ -116,6 +116,27 @@
                 <skip.failsafe.tests>true</skip.failsafe.tests>
                 <skip.surefire.tests>false</skip.surefire.tests>
                 <skip.docker.startup>true</skip.docker.startup>
+                <skip.javadoc.generation>true</skip.javadoc.generation>
+                <skip.sources.generation>true</skip.sources.generation>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker-integration-tests</id>
+            <properties>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+                <clm.skip>true</clm.skip>
+                <mdep.analyze.skip>true</mdep.analyze.skip>
+                <jar.skipIfEmpty>true</jar.skipIfEmpty>
+                <source.skip>true</source.skip>
+                <checkstyle.skip>true</checkstyle.skip>
+                <skipDuplicateClassCheck>true</skipDuplicateClassCheck>
+                <enforcer.skip>true</enforcer.skip>
+                <skip.failsafe.tests>false</skip.failsafe.tests>
+                <skip.surefire.tests>true</skip.surefire.tests>
+                <skip.docker.startup>true</skip.docker.startup>
+                <spring.profiles.active>docker-integration-test</spring.profiles.active>
+                <skip.javadoc.generation>true</skip.javadoc.generation>
+                <skip.sources.generation>true</skip.sources.generation>
             </properties>
         </profile>
     </profiles>
@@ -546,6 +567,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <skip>${skip.javadoc.generation}</skip>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -559,6 +583,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <skipSource>${skip.sources.generation}</skipSource>
+                </configuration>
             </plugin>
         </plugins>
     </build>

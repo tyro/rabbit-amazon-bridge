@@ -1,0 +1,5 @@
+version: '3'
+services:
+  sut:
+    image: ${DOCKER_BUILD_IMAGE}
+    command: /usr/bin/mvn --batch-mode verify -P unit-tests

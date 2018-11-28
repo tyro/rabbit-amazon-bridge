@@ -1,0 +1,9 @@
+FROM repository.cd.tyrocorp.net/tyro/ubuntu:mvn-webtest
+MAINTAINER Team Tam "team-tam@tyro.com"
+
+ARG VERSION
+
+WORKDIR /code
+COPY . /code
+
+RUN mvn install -P compile-only

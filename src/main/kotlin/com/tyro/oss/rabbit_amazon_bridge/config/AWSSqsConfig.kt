@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Profile
 
 
 @Configuration
-@Profile("!test")
+@Profile("!test", "!docker-integration-test")
 class AWSSqsConfig {
 
     @Bean
