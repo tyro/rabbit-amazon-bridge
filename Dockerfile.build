@@ -1,4 +1,4 @@
-FROM repository.cd.tyrocorp.net/tyro/ubuntu:mvn-webtest
+FROM maven:3.6.0-jdk-8-alpine
 MAINTAINER Team Tam "team-tam@tyro.com"
 
 ARG VERSION
