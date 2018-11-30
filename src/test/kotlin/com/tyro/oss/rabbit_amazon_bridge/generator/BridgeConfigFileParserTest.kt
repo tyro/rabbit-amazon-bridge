@@ -26,6 +26,18 @@ import org.springframework.core.io.ByteArrayResource
 
 class BridgeConfigFileParserTest {
 
+    companion object {
+        const val TRANSFORMATION_SPECS = """[
+                  {
+                    "operation": "shift",
+                    "spec": {
+                      "*": {
+                        "bid": "[&1].bid2"
+                      }
+                    }
+                  }]"""
+    }
+
     @Test
     fun `should generate an empty list for an empty file`() {
         val resource = configFileResources("")
@@ -36,16 +48,6 @@ class BridgeConfigFileParserTest {
 
     @Test
     fun `should generate bridge with jolt spec`() {
-        val transformationSpecs = """[
-              {
-                "operation": "shift",
-                "spec": {
-                  "*": {
-                    "bid": "[&1].bid2"
-                  }
-                }
-              }]"""
-
         val payload = configFileResources(
                 """[{
                        "from" : {
@@ -53,7 +55,7 @@ class BridgeConfigFileParserTest {
                            "exchange": "exchange-name-2",
                            "queueName": "queue-name-2",
                            "routingKey": "routing-key-2",
-                           "transformationSpecs": $transformationSpecs
+                           "transformationSpecs": $TRANSFORMATION_SPECS
                          }
                        },
                        "to" : {
@@ -68,7 +70,7 @@ class BridgeConfigFileParserTest {
         assertThat(bridges.size).isEqualTo(1)
         bridges[0].from.rabbit!!.let {
             assertThat(it.transformationSpecs as JsonArray)
-                    .isEqualTo(Gson().fromJson(transformationSpecs, object : TypeToken<JsonArray>() {}.type))
+                    .isEqualTo(Gson().fromJson(TRANSFORMATION_SPECS, object : TypeToken<JsonArray>() {}.type))
         }
     }
 
@@ -80,7 +82,7 @@ class BridgeConfigFileParserTest {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
                                 "routingKey": "routing-key-2",
-                                "whitelistedFields": ["fieldA", "fieldB"]
+                                 "transformationSpecs": $TRANSFORMATION_SPECS
                               }
                             },
                             "to" : {
@@ -98,7 +100,7 @@ class BridgeConfigFileParserTest {
             assertThat(it.exchange).isEqualTo("exchange-name-2")
             assertThat(it.queueName).isEqualTo("queue-name-2")
             assertThat(it.routingKey).isEqualTo("routing-key-2")
-            assertThat(it.whitelistedFields).isEqualTo(setOf("fieldA", "fieldB"))
+            assertThat(it.transformationSpecs).isNotNull
         }
         assertThat(bridges[0].to.sqs?.name).isEqualTo("sqs-queue-name")
     }
@@ -111,7 +113,7 @@ class BridgeConfigFileParserTest {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
                                 "routingKey": "routing-key-2",
-                                "whitelistedFields": ["fieldA", "fieldB"]
+                                "transformationSpecs": $TRANSFORMATION_SPECS
                               }
                             },
                             "to" : {
@@ -135,7 +137,7 @@ class BridgeConfigFileParserTest {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
                                 "routingKey": "routing-key-2",
-                                "whitelistedFields": ["fieldA", "fieldB"]
+                                "transformationSpecs": $TRANSFORMATION_SPECS
                               }
                             },
                             "to" : {
@@ -158,7 +160,7 @@ class BridgeConfigFileParserTest {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
                                 "routingKey": "routing-key-2",
-                                "whitelistedFields": ["fieldA", "fieldB"]
+                                "transformationSpecs": $TRANSFORMATION_SPECS
                               }
                             },
                             "to" : {
@@ -182,56 +184,39 @@ class BridgeConfigFileParserTest {
 
     @Test
     fun `should return multiple definitions`() {
-        val snsInstance = fromRabbitToSNSInstance()
-        val sqsInstance = fromRabbitToSQSInstance()
-        val payload = configFileResources(Gson().toJson(listOf(snsInstance, sqsInstance)))
-
+        val payload = configFileResources(
+            """[{
+                    "from" : {
+                        "rabbit": {
+                            "exchange": "exchange-name-2",
+                            "queueName": "queue-name-2",
+                            "routingKey": "routing-key-2",
+                            "transformationSpecs": $TRANSFORMATION_SPECS
+                        }
+                    },
+                    "to" : {
+                        "sqs": {
+                            "name":"sqs-queue-name"
+                        }
+                    }
+                },
+                {
+                    "from" : {
+                        "rabbit": {
+                            "exchange": "exchange-name-1",
+                            "queueName": "queue-name-1",
+                            "routingKey": "routing-key-1",
+                            "transformationSpecs": $TRANSFORMATION_SPECS
+                        }
+                    },
+                    "to" : {
+                        "sns": {
+                            "name":"sqs-queue-name"
+                        }
+                    }
+                }]""")
         val bridges = BridgeConfigFileParser(payload).parse()
         assertThat(bridges.size).isEqualTo(2)
-        assertThat(bridges).contains(sqsInstance, snsInstance)
-    }
-
-    @Test
-    fun `should throw an error when no whitelisted fields are specified in a 'from rabbit' definition`() {
-        val payload = configFileResources("""[{
-                            "from" : {
-                              "rabbit": {
-                                "exchange": "exchange-name-2",
-                                "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                "whitelistedFields": []
-                              }
-                            },
-                            "to" : {
-                              "sns": {
-                                "name":"sns-queue-name"
-                              }
-                            }
-                          }]""")
-
-        assertThatThrownBy { BridgeConfigFileParser(payload).parse() }
-                .isInstanceOf(IllegalStateException::class.java).hasMessage("Rabbit definitions must specify at least one whitelisted field or a transformationSpecs if messages are coming from rabbit")
-    }
-
-    @Test
-    fun `should throw an error when whitelisted fields are not present and messages are coming from rabbit`() {
-        val payload = configFileResources("""[{
-                            "from" : {
-                              "rabbit": {
-                                "exchange": "exchange-name-2",
-                                "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2"
-                              }
-                            },
-                            "to" : {
-                              "sns": {
-                                "name":"sns-queue-name"
-                              }
-                            }
-                          }]""")
-
-        assertThatThrownBy { BridgeConfigFileParser(payload).parse() }
-                .isInstanceOf(IllegalStateException::class.java).hasMessage("Rabbit definitions must specify at least one whitelisted field or a transformationSpecs if messages are coming from rabbit")
     }
 
     @Test
@@ -266,40 +251,6 @@ class BridgeConfigFileParserTest {
     }
 
     @Test
-    fun `should throw an exception if the whitelist and transformation spec are in the same bridge config`() {
-        val transformationSpecs = """[
-              {
-                "operation": "shift",
-                "spec": {
-                  "*": {
-                    "bid": "[&1].bid2"
-                  }
-                }
-              }]"""
-
-        val payload = configFileResources(
-                """[{
-                            "from" : {
-                              "rabbit": {
-                                "exchange": "exchange-name-2",
-                                "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                "whitelistedFields": ["bid"],
-                                "transformationSpecs": $transformationSpecs
-                              }
-                            },
-                            "to" : {
-                              "sqs": {
-                                "name":"sqs-queue-name"
-                              }
-                            }
-                          }]""")
-
-        assertThatThrownBy { BridgeConfigFileParser(payload).parse() }
-                .isInstanceOf(IllegalStateException::class.java).hasMessage("Rabbit definitions do not support both whitelist and transformation specs")
-    }
-
-    @Test
     fun `should throw an error when no ToDefinition is provided`() {
         val payload = configFileResources("""[{
                       "from" : {
@@ -307,7 +258,7 @@ class BridgeConfigFileParserTest {
                               "exchange": "exchange-name-2",
                               "queueName": "queue-name-2",
                               "routingKey": "routing-key-2",
-                              "whitelistedFields": ["fieldA"]
+                              "transformationSpecs": $TRANSFORMATION_SPECS
                             }
                         }
                 }]""")
@@ -324,7 +275,7 @@ class BridgeConfigFileParserTest {
                           "exchange": "exchange-name-2",
                           "queueName": "queue-name-2",
                           "routingKey": "routing-key-2",
-                          "whitelistedFields": ["fieldA", "fieldB"]
+                          "transformationSpecs": $TRANSFORMATION_SPECS
                         }
                       },
                       "to" : {}
@@ -341,7 +292,7 @@ class BridgeConfigFileParserTest {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
                                 "routingKey": "routing-key-2",
-                                "whitelistedFields": ["fieldA", "fieldB"]
+                                "transformationSpecs": $TRANSFORMATION_SPECS
                               }
                             },
                             "to" : {

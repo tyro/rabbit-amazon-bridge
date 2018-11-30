@@ -32,7 +32,6 @@ data class RabbitFromDefinition(
         val exchange: String,
         val queueName: String,
         val routingKey: String,
-        val whitelistedFields: Set<String>?,
         val transformationSpecs: JsonArray?)
 
 data class RabbitToDefinition(
@@ -44,5 +43,7 @@ data class SnsDefinition(val name: String)
 
 data class SqsDefinition(val name: String)
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun List<Bridge>.fromRabbit() = this.filter { it.from.rabbit != null }
+@Suppress("NOTHING_TO_INLINE")
 inline fun List<Bridge>.fromSqs() = this.filter { it.from.sqs != null }

@@ -40,14 +40,8 @@ class BridgeConfigFileParser(@Autowired val bridgeConfigResources: List<Resource
         check(bridges.all { it.from != null }) { "A 'from' definition is required" }
 
         bridges.fromRabbit().apply {
-            check(all {
-                (it.from.rabbit!!.whitelistedFields != null
-                        && it.from.rabbit.whitelistedFields!!.isNotEmpty())
-                        || it.from.rabbit.transformationSpecs != null
-            }) { "Rabbit definitions must specify at least one whitelisted field or a transformationSpecs if messages are coming from rabbit" }
-
-            check(none { it.from.rabbit!!.whitelistedFields != null && it.from.rabbit.transformationSpecs != null })
-            { "Rabbit definitions do not support both whitelist and transformation specs" }
+            check(none {it.from.rabbit!!.transformationSpecs == null })
+            { "Rabbit definitions should have a transformation specs" }
 
             check(all { hasAValidJoltSpecIfPresent(it) }) { "Invalid transformationSpec" }
 
@@ -76,7 +70,7 @@ class BridgeConfigFileParser(@Autowired val bridgeConfigResources: List<Resource
     private fun hasAValidJoltSpecIfPresent(it: Bridge): Boolean {
         return if (it.from.rabbit!!.transformationSpecs != null) {
             try {
-                val toString = Gson().toJson(it.from.rabbit!!.transformationSpecs)
+                val toString = Gson().toJson(it.from.rabbit.transformationSpecs)
                 val jsonToList = JsonUtils.jsonToList(toString)
                 Chainr.fromSpec(jsonToList)
                 true
