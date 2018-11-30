@@ -17,9 +17,9 @@
 package com.tyro.oss.rabbit_amazon_bridge.poller
 
 import com.nhaarman.mockito_kotlin.verify
-import com.tyro.oss.randomdata.RandomString
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.RabbitMessageBuilder
 import com.tyro.oss.rabbit_amazon_bridge.generator.*
+import com.tyro.oss.randomdata.RandomString
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -40,7 +40,7 @@ class RabbitSenderTest {
         val queueName = RandomString.randomString()
         val bridge = Bridge(
                 FromDefinition(null, SqsDefinition(queueName)),
-                ToDefinition(null, null, RabbitToDefinition(RandomString.randomString(), RandomString.randomString(), RandomString.randomString())),
+                ToDefinition(null, null, RabbitToDefinition(RandomString.randomString(), RandomString.randomString())),
                 true
         )
 

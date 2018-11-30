@@ -40,7 +40,7 @@ private fun snsToDefinition() = ToDefinition(SnsDefinition::class.arbitraryInsta
 private fun rabbitToDefinition() = ToDefinition(
         sns = null,
         sqs = null,
-        rabbit = RabbitToDefinition(randomString(), randomString(), randomString()))
+        rabbit = RabbitToDefinition(randomString(), randomString()))
 
 private fun rabbitFromDefinition() = FromDefinition(
             rabbit = RabbitFromDefinition(randomString(), randomString(), randomString(), randomSet<String>({ randomString() }, 3), null),

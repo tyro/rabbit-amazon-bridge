@@ -391,7 +391,6 @@ class BridgeConfigFileParserTest {
         assertThat(bridges.size).isEqualTo(1)
 
         assertThat(bridges[0].to.rabbit?.exchange).isEqualTo("exchange-name-2")
-        assertThat(bridges[0].to.rabbit?.queueName).isEqualTo("queue-name-2")
         assertThat(bridges[0].to.rabbit?.routingKey).isEqualTo("routing-key-2")
         assertThat(bridges[0].from.sqs?.name).isEqualTo("sqs-queue-name")
     }
@@ -418,7 +417,6 @@ class BridgeConfigFileParserTest {
         assertThat(bridges.size).isEqualTo(1)
 
         assertThat(bridges[0].to.rabbit?.exchange).isEqualTo("exchange-name-2")
-        assertThat(bridges[0].to.rabbit?.queueName).isEqualTo("queue-name-2")
         assertThat(bridges[0].to.rabbit?.routingKey).isEqualTo("routing-key-2")
         assertThat(bridges[0].from.sqs?.name).isEqualTo("sqs-queue-name")
     }
