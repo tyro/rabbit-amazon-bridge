@@ -18,7 +18,12 @@ package com.tyro.oss.rabbit_amazon_bridge.generator
 
 import com.google.gson.JsonArray
 
-data class Bridge(val from: FromDefinition, val to: ToDefinition, val shouldForwardMessages: Boolean?, val description: String? = null) {
+data class Bridge(
+        val from: FromDefinition,
+        val transformationSpecs: JsonArray?,
+        val to: ToDefinition,
+        val shouldForwardMessages: Boolean?,
+        val description: String? = null) {
     fun isForwardingMessagesEnabled(): Boolean {
         return shouldForwardMessages ?: true
     }
@@ -31,8 +36,7 @@ data class ToDefinition(val sns: SnsDefinition?, val sqs: SqsDefinition?, val ra
 data class RabbitFromDefinition(
         val exchange: String,
         val queueName: String,
-        val routingKey: String,
-        val transformationSpecs: JsonArray?)
+        val routingKey: String)
 
 data class RabbitToDefinition(
         val exchange: String,

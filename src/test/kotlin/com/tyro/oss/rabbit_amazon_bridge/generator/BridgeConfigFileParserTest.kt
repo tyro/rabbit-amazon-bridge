@@ -54,10 +54,10 @@ class BridgeConfigFileParserTest {
                          "rabbit": {
                            "exchange": "exchange-name-2",
                            "queueName": "queue-name-2",
-                           "routingKey": "routing-key-2",
-                           "transformationSpecs": $TRANSFORMATION_SPECS
+                           "routingKey": "routing-key-2"
                          }
                        },
+                       "transformationSpecs": $TRANSFORMATION_SPECS,
                        "to" : {
                          "sqs": {
                            "name":"sqs-queue-name"
@@ -68,7 +68,7 @@ class BridgeConfigFileParserTest {
         val bridges: List<Bridge> = BridgeConfigFileParser(payload).parse()
 
         assertThat(bridges.size).isEqualTo(1)
-        bridges[0].from.rabbit!!.let {
+        bridges[0].let {
             assertThat(it.transformationSpecs as JsonArray)
                     .isEqualTo(Gson().fromJson(TRANSFORMATION_SPECS, object : TypeToken<JsonArray>() {}.type))
         }
@@ -81,10 +81,10 @@ class BridgeConfigFileParserTest {
                               "rabbit": {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                 "transformationSpecs": $TRANSFORMATION_SPECS
+                                "routingKey": "routing-key-2"
                               }
                             },
+                            "transformationSpecs": $TRANSFORMATION_SPECS,
                             "to" : {
                               "sqs": {
                                 "name":"sqs-queue-name"
@@ -100,7 +100,6 @@ class BridgeConfigFileParserTest {
             assertThat(it.exchange).isEqualTo("exchange-name-2")
             assertThat(it.queueName).isEqualTo("queue-name-2")
             assertThat(it.routingKey).isEqualTo("routing-key-2")
-            assertThat(it.transformationSpecs).isNotNull
         }
         assertThat(bridges[0].to.sqs?.name).isEqualTo("sqs-queue-name")
     }
@@ -112,10 +111,10 @@ class BridgeConfigFileParserTest {
                               "rabbit": {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                "transformationSpecs": $TRANSFORMATION_SPECS
+                                "routingKey": "routing-key-2"
                               }
                             },
+                            "transformationSpecs": $TRANSFORMATION_SPECS,
                             "to" : {
                               "sqs": {
                                 "name":"sqs-queue-name"
@@ -136,10 +135,10 @@ class BridgeConfigFileParserTest {
                               "rabbit": {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                "transformationSpecs": $TRANSFORMATION_SPECS
+                                "routingKey": "routing-key-2"
                               }
                             },
+                            "transformationSpecs": $TRANSFORMATION_SPECS,
                             "to" : {
                               "sqs": {
                                 "name":"sqs-queue-name"
@@ -159,10 +158,10 @@ class BridgeConfigFileParserTest {
                               "rabbit": {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                "transformationSpecs": $TRANSFORMATION_SPECS
+                                "routingKey": "routing-key-2"
                               }
                             },
+                            "transformationSpecs": $TRANSFORMATION_SPECS,
                             "to" : {
                               "sns": {
                                 "name":"sns-queue-name"
@@ -190,10 +189,10 @@ class BridgeConfigFileParserTest {
                         "rabbit": {
                             "exchange": "exchange-name-2",
                             "queueName": "queue-name-2",
-                            "routingKey": "routing-key-2",
-                            "transformationSpecs": $TRANSFORMATION_SPECS
+                            "routingKey": "routing-key-2"
                         }
                     },
+                    "transformationSpecs": $TRANSFORMATION_SPECS,
                     "to" : {
                         "sqs": {
                             "name":"sqs-queue-name"
@@ -205,10 +204,10 @@ class BridgeConfigFileParserTest {
                         "rabbit": {
                             "exchange": "exchange-name-1",
                             "queueName": "queue-name-1",
-                            "routingKey": "routing-key-1",
-                            "transformationSpecs": $TRANSFORMATION_SPECS
+                            "routingKey": "routing-key-1"
                         }
                     },
+                    "transformationSpecs": $TRANSFORMATION_SPECS,
                     "to" : {
                         "sns": {
                             "name":"sqs-queue-name"
@@ -235,10 +234,10 @@ class BridgeConfigFileParserTest {
                               "rabbit": {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                "transformationSpecs": $joltSpec
+                                "routingKey": "routing-key-2"
                               }
                             },
+                            "transformationSpecs": $joltSpec,
                             "to" : {
                               "sqs": {
                                 "name":"sqs-queue-name"
@@ -257,10 +256,10 @@ class BridgeConfigFileParserTest {
                             "rabbit": {
                               "exchange": "exchange-name-2",
                               "queueName": "queue-name-2",
-                              "routingKey": "routing-key-2",
-                              "transformationSpecs": $TRANSFORMATION_SPECS
+                              "routingKey": "routing-key-2"
                             }
-                        }
+                        },
+                        "transformationSpecs": $TRANSFORMATION_SPECS
                 }]""")
 
         assertThatThrownBy { BridgeConfigFileParser(payload).parse() }.isInstanceOf(IllegalStateException::class.java).hasMessage("'To' definition is required")
@@ -274,10 +273,10 @@ class BridgeConfigFileParserTest {
                         "rabbit": {
                           "exchange": "exchange-name-2",
                           "queueName": "queue-name-2",
-                          "routingKey": "routing-key-2",
-                          "transformationSpecs": $TRANSFORMATION_SPECS
+                          "routingKey": "routing-key-2"
                         }
                       },
+                      "transformationSpecs": $TRANSFORMATION_SPECS,
                       "to" : {}
                     }]""")
 
@@ -291,10 +290,10 @@ class BridgeConfigFileParserTest {
                               "rabbit": {
                                 "exchange": "exchange-name-2",
                                 "queueName": "queue-name-2",
-                                "routingKey": "routing-key-2",
-                                "transformationSpecs": $TRANSFORMATION_SPECS
+                                "routingKey": "routing-key-2"
                               }
                             },
+                            "transformationSpecs": $TRANSFORMATION_SPECS,
                             "to" : {
                               "sns": {
                                 "name":"sns-queue-name"
@@ -311,6 +310,7 @@ class BridgeConfigFileParserTest {
     @Test
     fun `should throw an error when rabbit from details are not provided`() {
         val payload = configFileResources("""[{
+                       "transformationSpecs": $TRANSFORMATION_SPECS,
                        "to" : {
                          "sns": {
                            "name":"sns-queue-name"

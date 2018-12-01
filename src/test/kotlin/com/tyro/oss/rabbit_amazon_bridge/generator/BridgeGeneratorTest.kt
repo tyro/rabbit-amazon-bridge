@@ -22,7 +22,10 @@ import com.google.gson.JsonArray
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
-import com.tyro.oss.rabbit_amazon_bridge.forwarder.*
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.JoltMessageTransformer
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -64,7 +67,7 @@ class BridgeGeneratorTest {
     @Test
     fun `should generate sns bridge`() {
         val joltSpec = JsonArray()
-        val bridge = fromRabbitToSNSInstance().copy(from = rabbitFromDefinition(joltSpec))
+        val bridge = fromRabbitToSNSInstance().copy(transformationSpecs = joltSpec)
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
         val queue = mock<Queue>()
@@ -97,7 +100,7 @@ class BridgeGeneratorTest {
     @Test
     fun `should generate sqs bridge`() {
         val joltSpec = JsonArray()
-        val bridge = fromRabbitToSQSInstance().copy(from = rabbitFromDefinition(joltSpec))
+        val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = joltSpec)
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
         val queue = mock<Queue>()

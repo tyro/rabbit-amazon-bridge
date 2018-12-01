@@ -40,8 +40,9 @@ class RabbitSenderTest {
         val queueName = RandomString.randomString()
         val bridge = Bridge(
                 FromDefinition(null, SqsDefinition(queueName)),
-                ToDefinition(null, null, RabbitToDefinition(RandomString.randomString(), RandomString.randomString())),
-                true
+                transformationSpecs = null,
+                to = ToDefinition(null, null, RabbitToDefinition(RandomString.randomString(), RandomString.randomString())),
+                shouldForwardMessages = true
         )
 
         rabbitSender = RabbitSender(bridge, asyncRabbitTemplate)

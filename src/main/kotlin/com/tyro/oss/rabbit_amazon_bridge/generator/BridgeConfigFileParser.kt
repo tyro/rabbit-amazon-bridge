@@ -40,7 +40,7 @@ class BridgeConfigFileParser(@Autowired val bridgeConfigResources: List<Resource
         check(bridges.all { it.from != null }) { "A 'from' definition is required" }
 
         bridges.fromRabbit().apply {
-            check(none {it.from.rabbit!!.transformationSpecs == null })
+            check(none {it.transformationSpecs == null })
             { "Rabbit definitions should have a transformation specs" }
 
             check(all { hasAValidJoltSpecIfPresent(it) }) { "Invalid transformationSpec" }
@@ -68,9 +68,9 @@ class BridgeConfigFileParser(@Autowired val bridgeConfigResources: List<Resource
     }
 
     private fun hasAValidJoltSpecIfPresent(it: Bridge): Boolean {
-        return if (it.from.rabbit!!.transformationSpecs != null) {
+        return if (it.transformationSpecs != null) {
             try {
-                val toString = Gson().toJson(it.from.rabbit.transformationSpecs)
+                val toString = Gson().toJson(it.transformationSpecs)
                 val jsonToList = JsonUtils.jsonToList(toString)
                 Chainr.fromSpec(jsonToList)
                 true
