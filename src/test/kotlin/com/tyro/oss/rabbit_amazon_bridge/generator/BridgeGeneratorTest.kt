@@ -63,17 +63,20 @@ class BridgeGeneratorTest {
 
     @Test
     fun `should generate sns bridge`() {
-        val bridge = fromRabbitToSNSInstance()
+        val joltSpec = JsonArray()
+        val bridge = fromRabbitToSNSInstance().copy(from = rabbitFromDefinition(joltSpec))
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
         val queue = mock<Queue>()
         val deadletterQueue = mock<Queue>()
         val index = 0
+        val chainr = mock<Chainr>()
 
         val fromRabbit = bridge.from.rabbit!!
 
         whenever(deadLetteringrabbitCreationService.createExchange(fromRabbit.exchange)).thenReturn(Pair(exchange, deadletterExchange))
         whenever(deadLetteringrabbitCreationService.createQueue(fromRabbit.queueName, fromRabbit.exchange)).thenReturn(Pair(queue, deadletterQueue))
+        whenever(chainrFactory.createChainr(gson.toJson(joltSpec))).thenReturn(chainr)
 
         val endPoint = bridgeGenerator.generateFromRabbit(index, bridge)
 
@@ -88,40 +91,11 @@ class BridgeGeneratorTest {
         val snsMessageListener = deadletteringMessageListener.messageListener as SnsForwardingMessageListener
         assertThat(snsMessageListener.topicName).isEqualTo(bridge.to.sns?.name)
         assertThat(snsMessageListener.topicNotificationMessagingTemplate).isEqualTo(topicNotificationMessagingTemplate)
-        assertThat((snsMessageListener.messageTransformer as MessageScrubber).whitelistedFields).isEqualTo(fromRabbit.whitelistedFields)
+        assertThat(((snsMessageListener.messageTransformer as JoltMessageTransformer).chainr)).isSameAs(chainr)
     }
 
     @Test
     fun `should generate sqs bridge`() {
-        val bridge = fromRabbitToSQSInstance()
-        val exchange = mock<Exchange>()
-        val deadletterExchange = mock<Exchange>()
-        val queue = mock<Queue>()
-        val deadletterQueue = mock<Queue>()
-        val index = 0
-
-        val fromRabbit = bridge.from.rabbit!!
-        whenever(deadLetteringrabbitCreationService.createExchange(fromRabbit.exchange)).thenReturn(Pair(exchange, deadletterExchange))
-        whenever(deadLetteringrabbitCreationService.createQueue(fromRabbit.queueName, fromRabbit.exchange)).thenReturn(Pair(queue, deadletterQueue))
-
-        val endPoint = bridgeGenerator.generateFromRabbit(index, bridge)
-
-        verify(deadLetteringrabbitCreationService).createExchange(fromRabbit.exchange)
-        verify(deadLetteringrabbitCreationService).createQueue(fromRabbit.queueName, fromRabbit.exchange)
-        verify(deadLetteringrabbitCreationService).bind(queue, exchange, fromRabbit.routingKey)
-        verify(deadLetteringrabbitCreationService).bind(deadletterQueue, deadletterExchange, fromRabbit.queueName)
-
-        val deadletteringMessageListener = endPoint.messageListener as DeadletteringMessageListener
-        assertThat(endPoint.id).isEqualTo("org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#$index")
-        assertThat(endPoint.queueNames).isEqualTo(listOf(fromRabbit.queueName))
-        val sqsMessageListener = deadletteringMessageListener.messageListener as SqsForwardingMessageListener
-        assertThat(sqsMessageListener.queueName).isEqualTo(bridge.to.sqs?.name)
-        assertThat(sqsMessageListener.queueMessagingTemplate).isEqualTo(queueMessagingTemplate)
-        assertThat((sqsMessageListener.messageTransformer as MessageScrubber).whitelistedFields).isEqualTo(fromRabbit.whitelistedFields)
-    }
-
-    @Test
-    fun `should generate jolt transformer where bridge uses jolt`() {
         val joltSpec = JsonArray()
         val bridge = fromRabbitToSQSInstance().copy(from = rabbitFromDefinition(joltSpec))
         val exchange = mock<Exchange>()
@@ -144,7 +118,11 @@ class BridgeGeneratorTest {
         verify(deadLetteringrabbitCreationService).bind(deadletterQueue, deadletterExchange, fromRabbit.queueName)
 
         val deadletteringMessageListener = endPoint.messageListener as DeadletteringMessageListener
+        assertThat(endPoint.id).isEqualTo("org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#$index")
+        assertThat(endPoint.queueNames).isEqualTo(listOf(fromRabbit.queueName))
         val sqsMessageListener = deadletteringMessageListener.messageListener as SqsForwardingMessageListener
+        assertThat(sqsMessageListener.queueName).isEqualTo(bridge.to.sqs?.name)
+        assertThat(sqsMessageListener.queueMessagingTemplate).isEqualTo(queueMessagingTemplate)
         assertThat(((sqsMessageListener.messageTransformer as JoltMessageTransformer).chainr)).isSameAs(chainr)
     }
 }

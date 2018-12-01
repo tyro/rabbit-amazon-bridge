@@ -36,7 +36,7 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
 
     fun generateFromRabbit(index: Int, bridge: Bridge) : SimpleRabbitListenerEndpoint {
         val exchangeName = bridge.from.rabbit!!.exchange
-        val queueName = bridge.from.rabbit!!.queueName
+        val queueName = bridge.from.rabbit.queueName
 
         val (exchange, deadletterExchange) = rabbitCreationService.createExchange(exchangeName)
         val (queue, deadletterQueue) = rabbitCreationService.createQueue(queueName, exchangeName)
@@ -72,10 +72,5 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
         else -> throw IllegalStateException("")
     }
 
-    private fun createMessageTranslator(bridge: Bridge) =
-        if (bridge.from.rabbit?.whitelistedFields != null) {
-            MessageScrubber(gson, bridge.from.rabbit!!.whitelistedFields!!)
-        } else {
-            JoltMessageTransformer(chainrFactory.createChainr(Gson().toJson(bridge.from.rabbit!!.transformationSpecs)))
-        }
+    private fun createMessageTranslator(bridge: Bridge) = JoltMessageTransformer(chainrFactory.createChainr(Gson().toJson(bridge.from.rabbit!!.transformationSpecs)))
 }
