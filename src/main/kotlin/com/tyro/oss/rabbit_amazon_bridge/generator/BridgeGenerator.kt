@@ -17,7 +17,11 @@
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
 import com.google.gson.Gson
-import com.tyro.oss.rabbit_amazon_bridge.forwarder.*
+import com.google.gson.JsonArray
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.JoltMessageTransformer
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerEndpoint
 import org.springframework.beans.factory.annotation.Autowired
@@ -62,15 +66,16 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
         (bridge.to.sns != null) -> SnsForwardingMessageListener(
                 bridge.to.sns.name,
                 topicNotificationMessagingTemplate,
-                createMessageTranslator(bridge)
+                createMessageTransformer(bridge.transformationSpecs)
         )
         (bridge.to.sqs != null) -> SqsForwardingMessageListener(
                 bridge.to.sqs.name,
                 queueMessagingTemplate,
-                createMessageTranslator(bridge)
+                createMessageTransformer(bridge.transformationSpecs)
         )
         else -> throw IllegalStateException("")
     }
 
-    private fun createMessageTranslator(bridge: Bridge) = JoltMessageTransformer(chainrFactory.createChainr(Gson().toJson(bridge.from.rabbit!!.transformationSpecs)))
+    private fun createMessageTransformer(transformationSpecs: JsonArray?)
+            = JoltMessageTransformer(chainrFactory.createChainr(Gson().toJson(transformationSpecs)))
 }

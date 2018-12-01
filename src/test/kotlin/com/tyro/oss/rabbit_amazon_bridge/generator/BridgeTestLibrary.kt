@@ -19,22 +19,23 @@ package com.tyro.oss.rabbit_amazon_bridge.generator
 import com.google.gson.JsonArray
 import com.tyro.oss.arbitrater.arbitraryInstance
 import com.tyro.oss.randomdata.RandomBoolean.randomBoolean
-import com.tyro.oss.randomdata.RandomSet.randomSet
 import com.tyro.oss.randomdata.RandomString.randomString
 
 fun fromRabbitToSQSInstance() = arbitraryBridge()
         .copy(from = rabbitFromDefinition())
+        .copy(transformationSpecs = transformationSpecs())
         .copy(to = sqsToDefinition())
 
 fun fromRabbitToSNSInstance() = arbitraryBridge()
         .copy(from = rabbitFromDefinition())
+        .copy(transformationSpecs = transformationSpecs())
         .copy(to = snsToDefinition())
 
 fun fromSQSToRabbitInstance() = arbitraryBridge()
         .copy(from = sqsFromDefinition())
         .copy(to = rabbitToDefinition())
 
-private fun arbitraryBridge() = Bridge(sqsFromDefinition(), snsToDefinition(), randomBoolean(), randomString())
+private fun arbitraryBridge() = Bridge(sqsFromDefinition(), transformationSpecs(), snsToDefinition(), randomBoolean(), randomString())
 private fun sqsToDefinition() = ToDefinition(null, SqsDefinition::class.arbitraryInstance(), null)
 private fun snsToDefinition() = ToDefinition(SnsDefinition::class.arbitraryInstance(), null, null)
 private fun rabbitToDefinition() = ToDefinition(
@@ -57,3 +58,5 @@ private fun sqsFromDefinition() = FromDefinition(
             rabbit = null,
             sqs = SqsDefinition::class.arbitraryInstance()
         )
+
+private fun transformationSpecs() = JsonArray()
