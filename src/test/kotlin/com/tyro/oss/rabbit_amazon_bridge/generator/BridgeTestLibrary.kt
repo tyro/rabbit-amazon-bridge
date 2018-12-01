@@ -43,16 +43,10 @@ private fun rabbitToDefinition() = ToDefinition(
         sqs = null,
         rabbit = RabbitToDefinition(randomString(), randomString()))
 
-private fun rabbitFromDefinition() = FromDefinition(
-            rabbit = RabbitFromDefinition(randomString(), randomString(), randomString(), null),
+fun rabbitFromDefinition() = FromDefinition(
+            rabbit = RabbitFromDefinition(randomString(), randomString(), randomString()),
             sqs = null
         )
-
-fun rabbitFromDefinition(joltSpec: JsonArray) = FromDefinition(
-        rabbit = RabbitFromDefinition(
-                randomString(), randomString(), randomString(), joltSpec),
-        sqs = null
-)
 
 private fun sqsFromDefinition() = FromDefinition(
             rabbit = null,
