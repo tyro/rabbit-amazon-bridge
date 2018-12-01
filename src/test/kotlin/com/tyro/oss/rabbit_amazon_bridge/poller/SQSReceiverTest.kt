@@ -19,8 +19,8 @@ package com.tyro.oss.rabbit_amazon_bridge.poller
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest
 import com.amazonaws.services.sqs.model.ReceiveMessageResult
-import com.tyro.oss.randomdata.RandomString.randomString
 import com.tyro.oss.rabbit_amazon_bridge.generator.*
+import com.tyro.oss.randomdata.RandomString.randomString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,7 +40,7 @@ class SQSReceiverTest {
         val queueName = randomString()
         val bridge = Bridge(
                 FromDefinition(null, SqsDefinition(queueName)),
-                ToDefinition(null, null, RabbitToDefinition(randomString(), randomString(), randomString())),
+                ToDefinition(null, null, RabbitToDefinition(randomString(), randomString())),
                 true
         )
 
@@ -77,7 +77,7 @@ class SQSReceiverTest {
         val queueName = randomString()
         val bridge = Bridge(
                 FromDefinition(null, SqsDefinition(queueName)),
-                ToDefinition(null, null, RabbitToDefinition(randomString(), randomString(), randomString())),
+                ToDefinition(null, null, RabbitToDefinition(randomString(), randomString())),
                 true
         )
 

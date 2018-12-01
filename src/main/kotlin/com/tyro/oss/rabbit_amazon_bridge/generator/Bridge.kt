@@ -37,7 +37,6 @@ data class RabbitFromDefinition(
 
 data class RabbitToDefinition(
         val exchange: String,
-        val queueName: String,
         val routingKey: String)
 
 data class SnsDefinition(val name: String)
