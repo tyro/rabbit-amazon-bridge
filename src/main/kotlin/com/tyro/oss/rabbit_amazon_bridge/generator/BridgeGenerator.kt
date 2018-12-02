@@ -19,9 +19,9 @@ package com.tyro.oss.rabbit_amazon_bridge.generator
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
-import com.tyro.oss.rabbit_amazon_bridge.forwarder.JoltMessageTransformer
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.JoltMessageTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerEndpoint
 import org.springframework.beans.factory.annotation.Autowired

@@ -18,6 +18,7 @@ package com.tyro.oss.rabbit_amazon_bridge.forwarder
 
 
 import com.nhaarman.mockito_kotlin.argumentCaptor
+import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.MessageTransformer
 import com.tyro.oss.randomdata.RandomString.randomString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test

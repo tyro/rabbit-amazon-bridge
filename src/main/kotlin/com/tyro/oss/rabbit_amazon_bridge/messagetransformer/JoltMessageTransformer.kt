@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tyro.oss.rabbit_amazon_bridge.forwarder
+package com.tyro.oss.rabbit_amazon_bridge.messagetransformer
 
 import com.bazaarvoice.jolt.Chainr
 import com.bazaarvoice.jolt.JsonUtils

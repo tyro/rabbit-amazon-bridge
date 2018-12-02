@@ -23,9 +23,9 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
-import com.tyro.oss.rabbit_amazon_bridge.forwarder.JoltMessageTransformer
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.JoltMessageTransformer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
