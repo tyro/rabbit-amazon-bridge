@@ -33,7 +33,6 @@ import org.springframework.stereotype.Component
 class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationService,
                       @Autowired val queueMessagingTemplate: QueueMessagingTemplate,
                       @Autowired val topicNotificationMessagingTemplate: NotificationMessagingTemplate,
-                      @Autowired val chainrFactory: ChainrFactory,
                       @Autowired val gson: Gson) {
 
     private val LOG = LoggerFactory.getLogger(BridgeGenerator::class.java)
@@ -76,6 +75,5 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
         else -> throw IllegalStateException("")
     }
 
-    private fun createMessageTransformer(transformationSpecs: JsonArray?)
-            = JoltMessageTransformer(chainrFactory.createChainr(Gson().toJson(transformationSpecs)))
+    private fun createMessageTransformer(transformationSpecs: JsonArray?) = JoltMessageTransformer(transformationSpecs!!)
 }
