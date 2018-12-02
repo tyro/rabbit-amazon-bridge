@@ -16,6 +16,7 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.forwarder
 
+import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.MessageTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.AmqpRejectAndDontRequeueException
 import org.springframework.amqp.core.MessageListener

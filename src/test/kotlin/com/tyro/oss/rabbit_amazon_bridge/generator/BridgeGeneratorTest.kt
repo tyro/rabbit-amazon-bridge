@@ -16,16 +16,15 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
-import com.bazaarvoice.jolt.Chainr
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
-import com.tyro.oss.rabbit_amazon_bridge.forwarder.JoltMessageTransformer
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.JoltMessageTransformer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -46,12 +45,22 @@ class BridgeGeneratorTest {
     private lateinit var queueMessagingTemplate: QueueMessagingTemplate
     @Mock
     private lateinit var topicNotificationMessagingTemplate: NotificationMessagingTemplate
-    @Mock
-    private lateinit var chainrFactory: ChainrFactory
 
     private lateinit var bridgeGenerator: BridgeGenerator
 
     private val gson = Gson()
+
+    companion object {
+        const val TRANSFORMATION_SPECS = """[
+                  {
+                    "operation": "shift",
+                    "spec": {
+                      "*": {
+                        "bid": "[&1].bid2"
+                      }
+                    }
+                  }]"""
+    }
 
     @Before
     fun setUp() {
@@ -59,27 +68,24 @@ class BridgeGeneratorTest {
                 deadLetteringrabbitCreationService,
                 queueMessagingTemplate,
                 topicNotificationMessagingTemplate,
-                chainrFactory,
                 gson
         )
     }
 
     @Test
     fun `should generate sns bridge`() {
-        val joltSpec = JsonArray()
+        val joltSpec = gson.fromJson<JsonArray>(TRANSFORMATION_SPECS, JsonArray::class.java)
         val bridge = fromRabbitToSNSInstance().copy(transformationSpecs = joltSpec)
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
         val queue = mock<Queue>()
         val deadletterQueue = mock<Queue>()
         val index = 0
-        val chainr = mock<Chainr>()
 
         val fromRabbit = bridge.from.rabbit!!
 
         whenever(deadLetteringrabbitCreationService.createExchange(fromRabbit.exchange)).thenReturn(Pair(exchange, deadletterExchange))
         whenever(deadLetteringrabbitCreationService.createQueue(fromRabbit.queueName, fromRabbit.exchange)).thenReturn(Pair(queue, deadletterQueue))
-        whenever(chainrFactory.createChainr(gson.toJson(joltSpec))).thenReturn(chainr)
 
         val endPoint = bridgeGenerator.generateFromRabbit(index, bridge)
 
@@ -94,24 +100,22 @@ class BridgeGeneratorTest {
         val snsMessageListener = deadletteringMessageListener.messageListener as SnsForwardingMessageListener
         assertThat(snsMessageListener.topicName).isEqualTo(bridge.to.sns?.name)
         assertThat(snsMessageListener.topicNotificationMessagingTemplate).isEqualTo(topicNotificationMessagingTemplate)
-        assertThat(((snsMessageListener.messageTransformer as JoltMessageTransformer).chainr)).isSameAs(chainr)
+        assertThat(((snsMessageListener.messageTransformer as JoltMessageTransformer).chainr)).isNotNull
     }
 
     @Test
     fun `should generate sqs bridge`() {
-        val joltSpec = JsonArray()
+        val joltSpec = gson.fromJson<JsonArray>(TRANSFORMATION_SPECS, JsonArray::class.java)
         val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = joltSpec)
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
         val queue = mock<Queue>()
         val deadletterQueue = mock<Queue>()
         val index = 0
-        val chainr = mock<Chainr>()
 
         val fromRabbit = bridge.from.rabbit!!
         whenever(deadLetteringrabbitCreationService.createExchange(fromRabbit.exchange)).thenReturn(Pair(exchange, deadletterExchange))
         whenever(deadLetteringrabbitCreationService.createQueue(fromRabbit.queueName, fromRabbit.exchange)).thenReturn(Pair(queue, deadletterQueue))
-        whenever(chainrFactory.createChainr(gson.toJson(joltSpec))).thenReturn(chainr)
 
         val endPoint = bridgeGenerator.generateFromRabbit(index, bridge)
 
@@ -126,6 +130,6 @@ class BridgeGeneratorTest {
         val sqsMessageListener = deadletteringMessageListener.messageListener as SqsForwardingMessageListener
         assertThat(sqsMessageListener.queueName).isEqualTo(bridge.to.sqs?.name)
         assertThat(sqsMessageListener.queueMessagingTemplate).isEqualTo(queueMessagingTemplate)
-        assertThat(((sqsMessageListener.messageTransformer as JoltMessageTransformer).chainr)).isSameAs(chainr)
+        assertThat(((sqsMessageListener.messageTransformer as JoltMessageTransformer).chainr)).isNotNull
     }
 }
