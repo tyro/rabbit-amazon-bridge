@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package com.tyro.oss.rabbit_amazon_bridge.monitoring
+package com.tyro.oss.rabbit_amazon_bridge.config
 
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.tyro.oss.rabbit_amazon_bridge.RabbitAmazonBridgeSpringBootTest
-import org.apache.http.impl.client.HttpClientBuilder
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit4.SpringRunner
@@ -37,67 +30,26 @@ import org.springframework.test.context.junit4.SpringRunner
 @RabbitAmazonBridgeSpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext
-abstract class HealthStatusITBase {
-    @Value("\${server.port}")
-    lateinit var port: String
-
-    protected fun getHealthStatus(port: String): ResponseEntity<String> =
-            createRestTemplate()
-                    .getForEntity("http://localhost:$port/rabbit-amazon-bridge/health", String::class.java)
-
-    protected fun createRestTemplate(): TestRestTemplate {
-        val closeableHttpClient = HttpClientBuilder.create().build()
-
-        val template = TestRestTemplate()
-        val httpRequestFactory = template.restTemplate.requestFactory as HttpComponentsClientHttpRequestFactory
-        httpRequestFactory.httpClient = closeableHttpClient
-        return template
-    }
+abstract class ExtraPropertiesFileITBase {
+    @Value("\${expected.test.property:#{null}}")
+    var expectedProperty: String? = null
 }
 
-class HealthStatusDefaultIT : HealthStatusITBase() {
+class NoExtraPropertiesFileConfiguredIT : ExtraPropertiesFileITBase() {
 
     @Test
     fun `should return flat response`() {
-        val entity = getHealthStatus(port)
-        Assertions.assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
-
-        val json = Gson().fromJson<JsonObject>(entity.body, JsonObject::class.java)
-        val rabbitHealth = json.get("rabbit").asJsonObject
-        Assertions.assertThat(rabbitHealth.get("status").asString).isEqualTo("UP")
+        assertThat(expectedProperty).isNull()
     }
 
 }
 
-@TestPropertySource(properties = ["flat.healthcheck.response.format=true"])
-class HealthStatusFlatteningEnabledIT : HealthStatusITBase() {
+@TestPropertySource(properties = ["extra.properties.file=classpath:extra-properties.properties"])
+class ExtraPropertiesFileConfiguredIT : ExtraPropertiesFileITBase() {
 
     @Test
-    fun `should return flat response`() {
-        val entity = getHealthStatus(port)
-        Assertions.assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
-
-        val json = Gson().fromJson<JsonObject>(entity.body, JsonObject::class.java)
-        val rabbitHealth = json.get("rabbit").asJsonObject
-        Assertions.assertThat(rabbitHealth.get("status").asString).isEqualTo("UP")
-    }
-
-}
-
-@TestPropertySource(properties = ["flat.healthcheck.response.format=false"])
-class HealthStatusFlatteningDisabledIT : HealthStatusITBase() {
-
-    @Test
-    fun `should return flat response`() {
-        val entity = getHealthStatus(port)
-        Assertions.assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
-
-        val json = Gson().fromJson<JsonObject>(entity.body, JsonObject::class.java)
-        val details = json.get("details").asJsonObject
-        val rabbitHealth = details.get("rabbit").asJsonObject
-        val statusHealth = rabbitHealth.get("status").asJsonObject
-
-        Assertions.assertThat(statusHealth.get("code").asString).isEqualTo("UP")
+    fun `should have custom property value from extra properties`() {
+        assertThat(expectedProperty).isEqualTo("The customer property file was configured")
     }
 
 }
