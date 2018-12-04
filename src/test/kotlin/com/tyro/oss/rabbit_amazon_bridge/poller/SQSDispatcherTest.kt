@@ -66,14 +66,14 @@ class SQSDispatcherTest {
         }
 
         val queueUrl = randomString()
-
         val queueName = randomString()
+        val messageIdKey = randomString()
 
         `when`(sqsReceiver.receiveMessage()).thenReturn(listOf(message))
 
-        SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName).run()
+        SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName, messageIdKey).run()
 
-        verify(rabbitSender).send(SQSMessageConverter().convert(message, queueName))
+        verify(rabbitSender).send(SQSMessageConverter().convert(message, queueName, messageIdKey))
         verify(amazonSQS).deleteMessageAsync(queueUrl, jsonPayload.get("ReceiptHandle").asString)
     }
 
@@ -90,12 +90,13 @@ class SQSDispatcherTest {
 
         val queueUrl = randomString()
         val queueName = randomString()
+        val messageIdKey = randomString()
 
         doThrow(RuntimeException()).`when`(rabbitSender).send(any())
         `when`(sqsReceiver.receiveMessage()).thenReturn(listOf(message))
 
         assertFailsWith<RuntimeException> {
-            SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName).run()
+            SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName, messageIdKey).run()
         }
 
         verify(amazonSQS).changeMessageVisibilityAsync(queueUrl, jsonPayload.get("ReceiptHandle").asString, 0)
@@ -105,7 +106,7 @@ class SQSDispatcherTest {
     fun `If the queue is empty nothing should happen`() {
         `when`(sqsReceiver.receiveMessage()).thenReturn(emptyList())
 
-        SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, randomString(), randomString()).run()
+        SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, randomString(), randomString(), randomString()).run()
 
         verify(sqsReceiver, Times(1)).receiveMessage()
         verifyZeroInteractions(rabbitSender)

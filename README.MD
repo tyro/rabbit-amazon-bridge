@@ -119,6 +119,17 @@ aws.proxy.host=<proxy-host>
 aws.proxy.port=<proxy-port>
 ```
 
+#### Default message id key for incoming messages
+When messages come in from AWS on SQS or SNS they contain a 'messageId' that may be useful to some as a correlation id. 
+This messageId can be added to the messages prior to publishing the to payload to rabbit. 
+
+```properties
+default.incoming.message.id.key=globalMessageId
+```
+
+**Default**: uniqueReference
+
+If you do not want this setting you can set it to `#{null}`
 
 ### Additional useful Spring Properties
 Rabbit amazon bridge is based on spring boot so you can use almost any property it supports using it's relaxed binding.

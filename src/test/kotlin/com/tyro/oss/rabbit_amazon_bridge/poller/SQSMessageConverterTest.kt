@@ -34,7 +34,7 @@ class SQSMessageConverterTest {
         val convertedMessage = SQSMessageConverter().convert(IncomingAwsMessage().apply {
             body = messageBodyFromSNS
             messageId = randomUUID()
-        }, randomString())
+        }, randomString(), randomString())
 
         JsonParser().parse(convertedMessage).asJsonObject.let {
             assertThat(it.get("pbc").asString).isEqualTo("0.1")
@@ -49,15 +49,16 @@ class SQSMessageConverterTest {
     @Test
     fun `It generate the unique reference for a payload from SNS`() {
         val randomMessageId = randomUUID()
-
+        val messageIdKey = randomString()
         val prefix = "rabbit-amazon-bridge/${randomString()}"
+
         val convertedMessage = SQSMessageConverter().convert(IncomingAwsMessage().apply {
             body = messageBodyFromSNS
             messageId = randomMessageId
-        }, prefix)
+        }, prefix, messageIdKey)
 
         JsonParser().parse(convertedMessage).asJsonObject.let {
-            val uniqueReference = it.get("uniqueReference").asString
+            val uniqueReference = it.get(messageIdKey).asString
             assertThat(uniqueReference).isEqualTo("$prefix/$randomMessageId")
         }
     }
@@ -68,7 +69,7 @@ class SQSMessageConverterTest {
         val convertedMessage = SQSMessageConverter().convert(IncomingAwsMessage().apply {
             body = messageBodyFromSQS
             messageId = randomUUID()
-        }, prefix)
+        }, prefix,  randomString())
 
         JsonParser().parse(convertedMessage).asJsonObject.let {
             assertThat(it.getAsJsonObject("MyMessage").get("payload").asString).isEqualTo(randomPayload)
@@ -80,17 +81,34 @@ class SQSMessageConverterTest {
 
         val prefix = "rabbit-amazon-bridge/${randomString()}"
         val randomMessageId = randomUUID()
+        val messageIdKey = randomString()
 
         val incomingMessage = IncomingAwsMessage().apply {
             body = messageBodyFromSQS
             messageId = randomMessageId
         }
 
-        val convertedMessage = SQSMessageConverter().convert(incomingMessage, prefix)
+        val convertedMessage = SQSMessageConverter().convert(incomingMessage, prefix, messageIdKey)
 
         JsonParser().parse(convertedMessage).asJsonObject.let {
-            val uniqueReference = it.get("uniqueReference").asString
+            val uniqueReference = it.get(messageIdKey).asString
             assertThat(uniqueReference).isEqualTo("$prefix/$randomMessageId")
         }
+    }
+
+    @Test
+    fun `Should not add a message id when message id is null`() {
+        val prefix = "rabbit-amazon-bridge/${randomString()}"
+        val randomMessageId = randomUUID()
+
+
+        val incomingMessage = IncomingAwsMessage().apply {
+            body = messageBodyFromSQS
+            messageId = randomMessageId
+        }
+
+        val convertedMessage = SQSMessageConverter().convert(incomingMessage, prefix, null)
+
+        assertThat(JsonParser().parse(convertedMessage)).isEqualTo(JsonParser().parse(messageBodyFromSQS))
     }
 }

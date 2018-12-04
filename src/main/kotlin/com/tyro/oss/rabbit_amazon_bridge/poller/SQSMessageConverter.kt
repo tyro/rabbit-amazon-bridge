@@ -24,7 +24,9 @@ import com.tyro.oss.rabbit_amazon_bridge.forwarder.IncomingAwsMessage
 class SQSMessageConverter {
     private val jsonParser = JsonParser()
 
-    fun convert(message: IncomingAwsMessage, prefix: String): String {
+    fun convert(message: IncomingAwsMessage, prefix: String, messageIdKey: String?): String {
+
+
         val incomingMessageId = message.messageId
         val bodyJsonObject = message.body.asJson()
 
@@ -32,17 +34,25 @@ class SQSMessageConverter {
 
         val jsonPayload = if (payload.isJsonObject) {
             payload.asJsonObject
-        }   else {
+        } else {
             jsonParser.parse(payload.asString).asJsonObject
         }
 
-        return jsonPayload.apply {
+        return if (messageIdKey == null) {
+            jsonPayload.toString()
+        } else {
+            payloadWithMessageId(jsonPayload, messageIdKey, prefix, incomingMessageId)
+        }
+
+    }
+
+    private fun payloadWithMessageId(jsonPayload: JsonObject, messageIdKey: String, prefix: String, incomingMessageId: String) =
+        jsonPayload.apply {
             addProperty(
-                    "uniqueReference",
+                    messageIdKey,
                     "$prefix/$incomingMessageId"
             )
         }.toString()
-    }
 
     private fun extractPayload(jsonElement: JsonElement) =
             if (jsonElement.isFromSNS()) {
