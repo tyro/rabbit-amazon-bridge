@@ -31,7 +31,7 @@ import org.springframework.jmx.support.RegistrationPolicy
 @Import(TaskSchedulerConfig::class, RestConfig::class, RabbitEndPointConfigurer::class, SQSPollersConfigurer::class)
 @ComponentScan(value = ["com.tyro.oss.rabbit_amazon_bridge"], excludeFilters = [ComponentScan.Filter(Configuration::class)])
 @EnableMBeanExport(registration = RegistrationPolicy.IGNORE_EXISTING)
-@PropertySource(value = ["classpath:private.properties"], ignoreResourceNotFound = true)
+@PropertySource(value = ["\${extra.properties.file}"], ignoreResourceNotFound = true)
 class MainConfig {
 
     @Bean
