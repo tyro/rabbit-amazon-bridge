@@ -157,14 +157,13 @@ We will cheekily suggest applying common sense. We don't use hibernate in this p
 
 Run 
 ```bash
-mvn clean install
+./mvnw clean install
 ```
 
 ### Dependencies
 
 * Docker
 * Java 8 or higher 
-* Maven
 
 ## Docker builds
 
