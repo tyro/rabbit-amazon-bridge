@@ -103,14 +103,6 @@ We mostly for shifting (which we use to strip out sensitive fields) and/or field
 ### Customised properties
 We've added a few custom properties
 
-#### Change your SQS endpoint url
-This is used for working with elasticmq for local testing.  
-
-```properties  
-aws.sqs.endpoint.url=http://localhost:9324
-aws.sqs.aws.region=localhost
-```
-
 #### Proxied comms to AWS
 This may be useful for organisations who want all traffic between their on-premise artefacts and amazon to go through a proxy.
 
@@ -119,17 +111,26 @@ aws.proxy.host=<proxy-host>
 aws.proxy.port=<proxy-port>
 ```
 
+This is disabled by default
+
 #### Default message id key for incoming messages
 When messages come in from AWS on SQS or SNS they contain a 'messageId' that may be useful to some as a correlation id. 
 This messageId can be added to the messages prior to publishing the to payload to rabbit. 
+The format of this field is <queue-name>/messageId
 
 ```properties
 default.incoming.message.id.key=globalMessageId
 ```
 
-**Default**: uniqueReference
+**Default**: null
 
-If you do not want this setting you can set it to `#{null}`
+#### Change your SQS endpoint url
+This is used for working with elasticmq for local testing.  
+
+```properties  
+aws.sqs.endpoint.url=http://localhost:9324
+aws.sqs.aws.region=localhost
+```
 
 ### Additional useful Spring Properties
 Rabbit amazon bridge is based on spring boot so you can use almost any property it supports using it's relaxed binding.

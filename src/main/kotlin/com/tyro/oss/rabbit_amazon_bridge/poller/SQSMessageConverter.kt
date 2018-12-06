@@ -26,7 +26,6 @@ class SQSMessageConverter {
 
     fun convert(message: IncomingAwsMessage, prefix: String, messageIdKey: String?): String {
 
-
         val incomingMessageId = message.messageId
         val bodyJsonObject = message.body.asJson()
 
