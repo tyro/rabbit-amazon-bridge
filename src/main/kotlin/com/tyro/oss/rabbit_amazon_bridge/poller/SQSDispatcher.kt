@@ -19,7 +19,7 @@ package com.tyro.oss.rabbit_amazon_bridge.poller
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import org.slf4j.LoggerFactory
 
-class SQSDispatcher(private val amazonSQS: AmazonSQSAsync, val sqsReceiver: SQSReceiver, val rabbitSender: RabbitSender, val queueUrl: String, val queueName: String) : Runnable {
+class SQSDispatcher(private val amazonSQS: AmazonSQSAsync, val sqsReceiver: SQSReceiver, val rabbitSender: RabbitSender, val queueUrl: String, val queueName: String, val messageIdKey: String?) : Runnable {
 
     override fun run() {
 
@@ -29,7 +29,7 @@ class SQSDispatcher(private val amazonSQS: AmazonSQSAsync, val sqsReceiver: SQSR
             val receiptHandle = it.receiptHandle
 
             try {
-                rabbitSender.send(messageConverter.convert(it, queueName))
+                rabbitSender.send(messageConverter.convert(it, queueName, messageIdKey))
                 amazonSQS.deleteMessageAsync(queueUrl, receiptHandle)
             } catch (e: Exception) {
                 amazonSQS.changeMessageVisibilityAsync(queueUrl, receiptHandle, 0)

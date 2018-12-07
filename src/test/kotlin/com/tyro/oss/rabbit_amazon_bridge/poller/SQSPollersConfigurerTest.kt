@@ -24,6 +24,7 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.tyro.oss.rabbit_amazon_bridge.generator.RabbitCreationService
 import com.tyro.oss.rabbit_amazon_bridge.generator.fromSQSToRabbitInstance
+import com.tyro.oss.randomdata.RandomString.randomString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,6 +56,7 @@ class SQSPollersConfigurerTest{
                 fromSQSToRabbitInstance(),
                 fromSQSToRabbitInstance()
         )
+        val messageIdKey = randomString()
 
         bridgesFromSQS.forEach {
             whenever(amazonSQS.getQueueUrl(it.from.sqs!!.name)).thenReturn(
@@ -64,7 +66,7 @@ class SQSPollersConfigurerTest{
             )
         }
 
-        val config = SQSPollersConfigurer(amazonSQS, bridgesFromSQS, rabbitTemplate, rabbitCreationService)
+        val config = SQSPollersConfigurer(amazonSQS, bridgesFromSQS, rabbitTemplate, rabbitCreationService, messageIdKey)
 
         config.configureTasks(taskRegistrar)
 
@@ -83,6 +85,7 @@ class SQSPollersConfigurerTest{
             assertThat(dispatcher.rabbitSender.routingKey).isEqualTo(bridge.to.rabbit!!.routingKey)
             assertThat(dispatcher.queueUrl).isEqualTo("https://thing.com/${bridge.from.sqs!!.name}")
             assertThat(dispatcher.sqsReceiver.queueUrl).isEqualTo("https://thing.com/${bridge.from.sqs!!.name}")
+            assertThat(dispatcher.messageIdKey).isEqualTo(messageIdKey)
         }
 
     }

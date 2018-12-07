@@ -22,6 +22,7 @@ import com.tyro.oss.rabbit_amazon_bridge.generator.RabbitCreationService
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -34,7 +35,8 @@ class SQSPollersConfigurer(
         @Autowired val amazonSQS: AmazonSQSAsync,
         @Autowired val bridgesFromSQS: List<Bridge>,
         @Autowired val rabbitTemplate: RabbitTemplate,
-        @Autowired val rabbitCreationService: RabbitCreationService
+        @Autowired val rabbitCreationService: RabbitCreationService,
+        @Value(value = "\${default.incoming.message.id.key:#{null}}") val messageIdKey: String?
 
 ) : SchedulingConfigurer {
     @Bean
@@ -51,7 +53,7 @@ class SQSPollersConfigurer(
             rabbitCreationService.createExchange(it.to.rabbit!!.exchange)
             val sqsReceiver = SQSReceiver(it, amazonSQS, queueUrl)
             val rabbitSender = RabbitSender(it, asyncRabbitTemplate())
-            val sqsDispatcher = SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName)
+            val sqsDispatcher = SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName, messageIdKey)
 
             taskRegistrar.addFixedDelayTask(sqsDispatcher, 20)
         }
