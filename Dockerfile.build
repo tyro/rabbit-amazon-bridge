@@ -6,5 +6,4 @@ ARG VERSION
 WORKDIR /code
 COPY . /code
 
-#RUN mvn install -P compile-only
-RUN mvn install
+RUN mvn install -P compile-only
