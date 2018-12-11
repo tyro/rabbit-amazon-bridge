@@ -1,0 +1,10 @@
+sudo: required
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: build
+      script:
+      - make build

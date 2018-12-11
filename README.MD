@@ -1,4 +1,5 @@
 # Rabbit Amazon Bridge
+[![Build Status](https://travis-ci.org/tyro/rabbit-amazon-bridge.svg?branch=master)](https://travis-ci.org/tyro/rabbit-amazon-bridge)
 
 The rabbit-amazon-bridge is a service that helps us route rabbit messages from on-premise applications to and from services running in Amazon.
 
