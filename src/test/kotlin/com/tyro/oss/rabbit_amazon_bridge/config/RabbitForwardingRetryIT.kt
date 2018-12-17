@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.tyro.oss.rabbit_amazon_bridge.forwarder
+package com.tyro.oss.rabbit_amazon_bridge.config
 
 import com.tyro.oss.rabbit_amazon_bridge.RabbitAmazonBridgeSpringBootTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory
+import org.springframework.amqp.utils.test.TestUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.retry.interceptor.RetryOperationsInterceptor
@@ -32,14 +33,26 @@ import org.springframework.test.context.junit4.SpringRunner
 @RabbitAmazonBridgeSpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext
-class RabbitForwardingRetryDefaultIT {
+@TestPropertySource(properties = [
+    "spring.rabbitmq.listener.simple.retry.enabled=true",
+    "spring.rabbitmq.listener.simple.retry.initial-interval=1000ms",
+    "spring.rabbitmq.listener.simple.retry.max-attempts=500",
+    "spring.rabbitmq.listener.simple.retry.max-interval=60000ms",
+    "spring.rabbitmq.listener.simple.retry.multiplier=2"
+])
+class RabbitForwardingRetryIT {
 
     @Autowired
     lateinit var rabbitListenerContainerFactory: SimpleRabbitListenerContainerFactory
 
     @Test
     fun `should have a retry operations advice configured by default`() {
-        assertThat(rabbitListenerContainerFactory.adviceChain[0]).isInstanceOf(RetryOperationsInterceptor::class.java)
+        val retryOperationsInterceptor = rabbitListenerContainerFactory.adviceChain[0]
+        assertThat(retryOperationsInterceptor).isInstanceOf(RetryOperationsInterceptor::class.java)
+        assertThat(TestUtils.getPropertyValue(retryOperationsInterceptor, "retryOperations.retryPolicy.maxAttempts")).isEqualTo(500)
+        assertThat(TestUtils.getPropertyValue(retryOperationsInterceptor, "retryOperations.backOffPolicy.initialInterval")).isEqualTo(1000L)
+        assertThat(TestUtils.getPropertyValue(retryOperationsInterceptor, "retryOperations.backOffPolicy.multiplier")).isEqualTo(2.0)
+        assertThat(TestUtils.getPropertyValue(retryOperationsInterceptor, "retryOperations.backOffPolicy.maxInterval")).isEqualTo(60000L)
     }
 
 }

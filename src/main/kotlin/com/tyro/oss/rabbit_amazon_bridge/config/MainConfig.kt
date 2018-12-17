@@ -28,7 +28,7 @@ import org.springframework.context.annotation.*
 import org.springframework.jmx.support.RegistrationPolicy
 
 @Configuration
-@Import(TaskSchedulerConfig::class, RestConfig::class, RabbitEndPointConfigurer::class, SQSPollersConfigurer::class)
+@Import(TaskSchedulerConfig::class, RestConfig::class, RabbitEndPointConfigurer::class, RabbitRetryConfig::class, SQSPollersConfigurer::class)
 @ComponentScan(value = ["com.tyro.oss.rabbit_amazon_bridge"], excludeFilters = [ComponentScan.Filter(Configuration::class)])
 @EnableMBeanExport(registration = RegistrationPolicy.IGNORE_EXISTING)
 @PropertySource(value = ["\${extra.properties.file}"], ignoreResourceNotFound = true)

@@ -25,6 +25,7 @@ import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.JoltMessageTransform
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerEndpoint
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.aws.messaging.core.NotificationMessagingTemplate
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate
 import org.springframework.stereotype.Component
@@ -33,7 +34,8 @@ import org.springframework.stereotype.Component
 class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationService,
                       @Autowired val queueMessagingTemplate: QueueMessagingTemplate,
                       @Autowired val topicNotificationMessagingTemplate: NotificationMessagingTemplate,
-                      @Autowired val gson: Gson) {
+                      @Autowired val gson: Gson,
+                      @Value("\${spring.rabbitmq.listener.simple.retry.enabled:true}") val shouldRetry: Boolean) {
 
     private val LOG = LoggerFactory.getLogger(BridgeGenerator::class.java)
 
@@ -59,7 +61,7 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
         return if (bridge.to.sns != null) bridge.to.sns.name else bridge.to.sqs!!.name
     }
 
-    private fun messageListener(bridge: Bridge) = DeadletteringMessageListener(amazonSendingListener(bridge))
+    private fun messageListener(bridge: Bridge) = DeadletteringMessageListener(amazonSendingListener(bridge), shouldRetry)
 
     private fun amazonSendingListener(bridge: Bridge) = when {
         (bridge.to.sns != null) -> SnsForwardingMessageListener(
