@@ -25,6 +25,7 @@ import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.JoltMessageTransformer
+import com.tyro.oss.randomdata.RandomBoolean.randomBoolean
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -48,6 +49,8 @@ class BridgeGeneratorTest {
 
     private lateinit var bridgeGenerator: BridgeGenerator
 
+    private val shouldRetry = randomBoolean()
+
     private val gson = Gson()
 
     companion object {
@@ -68,7 +71,8 @@ class BridgeGeneratorTest {
                 deadLetteringrabbitCreationService,
                 queueMessagingTemplate,
                 topicNotificationMessagingTemplate,
-                gson
+                gson,
+                shouldRetry
         )
     }
 
@@ -97,6 +101,7 @@ class BridgeGeneratorTest {
         val deadletteringMessageListener = endPoint.messageListener as DeadletteringMessageListener
         assertThat(endPoint.id).isEqualTo("org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#$index")
         assertThat(endPoint.queueNames).isEqualTo(listOf(fromRabbit.queueName))
+        assertThat(deadletteringMessageListener.shouldRetry).isEqualTo(shouldRetry)
         val snsMessageListener = deadletteringMessageListener.messageListener as SnsForwardingMessageListener
         assertThat(snsMessageListener.topicName).isEqualTo(bridge.to.sns?.name)
         assertThat(snsMessageListener.topicNotificationMessagingTemplate).isEqualTo(topicNotificationMessagingTemplate)
@@ -127,6 +132,7 @@ class BridgeGeneratorTest {
         val deadletteringMessageListener = endPoint.messageListener as DeadletteringMessageListener
         assertThat(endPoint.id).isEqualTo("org.springframework.amqp.rabbit.RabbitListenerEndpointContainer#$index")
         assertThat(endPoint.queueNames).isEqualTo(listOf(fromRabbit.queueName))
+        assertThat(deadletteringMessageListener.shouldRetry).isEqualTo(shouldRetry)
         val sqsMessageListener = deadletteringMessageListener.messageListener as SqsForwardingMessageListener
         assertThat(sqsMessageListener.queueName).isEqualTo(bridge.to.sqs?.name)
         assertThat(sqsMessageListener.queueMessagingTemplate).isEqualTo(queueMessagingTemplate)

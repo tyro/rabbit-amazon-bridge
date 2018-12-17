@@ -17,6 +17,8 @@
 package com.tyro.oss.rabbit_amazon_bridge.forwarder
 
 
+import com.amazonaws.AmazonClientException
+import com.amazonaws.SdkBaseException
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
@@ -53,6 +55,28 @@ class DeadletteringMessageListenerTest {
         assertThatExceptionOfType(AmqpRejectAndDontRequeueException::class.java)
                 .isThrownBy { listener().onMessage(randomMessage()) }
                 .withCause(exception)
+    }
+
+    @Test
+    fun `should dead letter if rabbit listener retry is disabled and sending message to amazon fails`() {
+        val amazonClientException = AmazonClientException("Bad cloud")
+        whenever(wrappedMessageListener.onMessage(any())).thenThrow(amazonClientException)
+
+        assertThatExceptionOfType(AmqpRejectAndDontRequeueException::class.java)
+                .isThrownBy {
+                    DeadletteringMessageListener(wrappedMessageListener, false).onMessage(randomMessage())
+                }.withCause(amazonClientException)
+    }
+
+    @Test
+    fun `should retry if rabbit listener retry is enabled and sending message to amazon fails`() {
+        val amazonClientException = SdkBaseException("Bad cloud")
+        whenever(wrappedMessageListener.onMessage(any())).thenThrow(amazonClientException)
+
+        assertThatExceptionOfType(SdkBaseException::class.java)
+                .isThrownBy {
+                    DeadletteringMessageListener(wrappedMessageListener, true).onMessage(randomMessage())
+                }
     }
 
     private fun listener() =
