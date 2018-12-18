@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.amqp.RabbitProperties
 import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.messaging.MessageDeliveryException
 import org.springframework.retry.policy.SimpleRetryPolicy
 
 @Configuration
@@ -27,7 +28,8 @@ class RabbitRetryConfig {
         if (retryConfig.isEnabled) {
             val simpleRetryPolicy = SimpleRetryPolicy(retryConfig.maxAttempts, mapOf<Class<out Throwable>, Boolean>(
                     AmqpRejectAndDontRequeueException::class.java to false,
-                    SdkBaseException::class.java to true
+                    SdkBaseException::class.java to true,
+                    MessageDeliveryException::class.java to true
             ), true)
             val retryOperationsInterceptor = RetryInterceptorBuilder.stateless()
                     .retryPolicy(simpleRetryPolicy)

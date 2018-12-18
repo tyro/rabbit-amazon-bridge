@@ -31,6 +31,7 @@ import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.amqp.AmqpRejectAndDontRequeueException
 import org.springframework.amqp.core.MessageListener
 import org.springframework.amqp.core.MessageProperties
+import org.springframework.messaging.MessagingException
 
 @RunWith(MockitoJUnitRunner::class)
 class DeadletteringMessageListenerTest {
@@ -74,6 +75,17 @@ class DeadletteringMessageListenerTest {
         whenever(wrappedMessageListener.onMessage(any())).thenThrow(amazonClientException)
 
         assertThatExceptionOfType(SdkBaseException::class.java)
+                .isThrownBy {
+                    DeadletteringMessageListener(wrappedMessageListener, true).onMessage(randomMessage())
+                }
+    }
+
+    @Test
+    fun `should retry if rabbit listener retry is enabled and spring fires a messaging exception`() {
+        val messageingException = MessagingException("Bad cloud")
+        whenever(wrappedMessageListener.onMessage(any())).thenThrow(messageingException)
+
+        assertThatExceptionOfType(MessagingException::class.java)
                 .isThrownBy {
                     DeadletteringMessageListener(wrappedMessageListener, true).onMessage(randomMessage())
                 }

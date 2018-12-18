@@ -23,6 +23,7 @@ import org.springframework.amqp.AmqpRejectAndDontRequeueException
 import org.springframework.amqp.core.MessageListener
 import org.springframework.cloud.aws.messaging.core.NotificationMessagingTemplate
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate
+import org.springframework.messaging.MessagingException
 
 abstract class MessageTransformingMessageListener(val messageTransformer: MessageTransformer) : MessageListener {
 
@@ -61,15 +62,14 @@ class DeadletteringMessageListener(val messageListener: MessageListener, val sho
         try {
             LOG.info("Message received on ${rabbitMessage.messageProperties.receivedExchange} / ${rabbitMessage.messageProperties.consumerQueue}")
             messageListener.onMessage(rabbitMessage)
-        } catch (exception: SdkBaseException) {
-            if (shouldRetry) {
-                LOG.warn("A retryable error occurred.", exception)
-                throw exception
-            } else {
-                throw AmqpRejectAndDontRequeueException(exception)
-            }
         } catch (exception: Exception) {
-            throw AmqpRejectAndDontRequeueException(exception)
+            when {
+                shouldRetry && (exception is SdkBaseException || exception is MessagingException) -> {
+                    LOG.warn("A retryable error occurred.", exception)
+                    throw exception
+                }
+                else -> throw AmqpRejectAndDontRequeueException(exception)
+            }
         }
     }
 }
