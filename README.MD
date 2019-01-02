@@ -21,8 +21,8 @@ spring.rabbitmq.port=5672
 spring.rabbitmq.username=<your rabbit mq user>
 spring.rabbitmq.password=<your rabbit mq password>
 spring.rabbitmq.virtual-host=/
-aws.credentials.secretKey=<your aws secret key>
-aws.credentials.accessKey=<your aws access key>
+cloud.aws.credentials.accessKey=<your aws secret key>
+cloud.aws.credentials.secretKey=<your aws access key>
 cloud.aws.region.static=us-east-1
 bridge.config.location=classpath:bridge-config.json,file:/opt/rabbit-bridge/some-other-config.json
 
@@ -96,10 +96,6 @@ We mostly for shifting (which we use to strip out sensitive fields) and/or field
   }
 ]
 ```
-
-
-
-
 
 ### Customised properties
 We've added a few custom properties
