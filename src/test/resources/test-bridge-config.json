@@ -37,7 +37,7 @@
     }],
     "to" : {
       "sqs": {
-        "name":"rabbit-bridge-test-queue"
+        "name":"rabbit-bridge-test-queuea"
       }
     }
   },
