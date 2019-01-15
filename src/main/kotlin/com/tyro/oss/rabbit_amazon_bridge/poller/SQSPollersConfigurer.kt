@@ -18,7 +18,6 @@ package com.tyro.oss.rabbit_amazon_bridge.poller
 
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.tyro.oss.rabbit_amazon_bridge.generator.Bridge
-import com.tyro.oss.rabbit_amazon_bridge.generator.BridgeConfigFileParser
 import com.tyro.oss.rabbit_amazon_bridge.generator.RabbitCreationService
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate
