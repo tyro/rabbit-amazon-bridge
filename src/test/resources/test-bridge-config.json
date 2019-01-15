@@ -7,13 +7,6 @@
         "routingKey": "routing-key-1"
       }
     },
-    "transformationSpecs": [{
-      "operation": "shift",
-      "spec": {
-        "fieldA": "fieldA",
-        "fieldB": "fieldB"
-      }
-    }],
     "to" : {
       "sns": {
         "name":"rabbit-bridge-test-topic"
