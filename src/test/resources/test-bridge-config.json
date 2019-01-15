@@ -52,6 +52,7 @@
         "exchange": "exchange-name-3",
         "routingKey": "routing-key-3"
       }
-    }
+    },
+    "shouldForwardMessages": false
   }
 ]
