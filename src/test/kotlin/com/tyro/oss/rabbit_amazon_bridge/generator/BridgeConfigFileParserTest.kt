@@ -75,6 +75,30 @@ class BridgeConfigFileParserTest {
     }
 
     @Test
+    fun `should be able to generate a rabbit definition when there is no transformationSpecs`() {
+        val resourceContent = """[{
+                            "from" : {
+                              "rabbit": {
+                                "exchange": "exchange-name-2",
+                                "queueName": "queue-name-2",
+                                "routingKey": "routing-key-2"
+                              }
+                            },
+                            "to" : {
+                              "sqs": {
+                                "name":"sqs-queue-name"
+                              }
+                            }
+                          }]"""
+        val payload = configFileResources(resourceContent)
+
+        val bridges: List<Bridge> = BridgeConfigFileParser(payload).parse()
+
+        assertThat(bridges.size).isEqualTo(1)
+        assertThat(bridges[0].transformationSpecs).isNull()
+    }
+
+    @Test
     fun `should generate a rabbit definition in the bridge for sqs`() {
         val resourceContent = """[{
                             "from" : {

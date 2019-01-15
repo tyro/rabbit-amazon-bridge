@@ -37,8 +37,8 @@ class JoltMessageTransformerTest {
 
         whenever(chainr.transform(objectVersionOfMessage)).thenReturn(transformedObject)
 
-        val transform = JoltMessageTransformer(chainr).transform(inputMessage)
-        assertThat(transform).isEqualTo(expectedOutputJson)
+        val result = JoltMessageTransformer(chainr).transform(inputMessage)
+        assertThat(result).isEqualTo(expectedOutputJson)
     }
 
     @Test
@@ -47,8 +47,7 @@ class JoltMessageTransformerTest {
 
         whenever(chainr.transform(any())).thenReturn(null)
 
-        val transform = JoltMessageTransformer(chainr).transform("{\"key\":\"value\"}")
-
-        assertThat(transform).isEqualTo("{}")
+        val result = JoltMessageTransformer(chainr).transform("{\"key\":\"value\"}")
+        assertThat(result).isEqualTo("{}")
     }
 }
