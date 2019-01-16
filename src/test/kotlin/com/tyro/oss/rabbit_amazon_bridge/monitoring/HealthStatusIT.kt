@@ -16,11 +16,11 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.monitoring
 
-import com.google.gson.Gson
-import com.google.gson.JsonObject
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.tyro.oss.rabbit_amazon_bridge.RabbitAmazonBridgeSpringBootTest
 import org.apache.http.impl.client.HttpClientBuilder
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Value
@@ -45,6 +45,9 @@ abstract class HealthStatusITBase {
             createRestTemplate()
                     .getForEntity("http://localhost:$port/rabbit-amazon-bridge/health", String::class.java)
 
+    protected fun valueAt(path: String, entity: ResponseEntity<String>) =
+            ObjectMapper().readTree(entity.body).at(path).textValue()
+
     protected fun createRestTemplate(): TestRestTemplate {
         val closeableHttpClient = HttpClientBuilder.create().build()
 
@@ -60,11 +63,9 @@ class HealthStatusDefaultIT : HealthStatusITBase() {
     @Test
     fun `should return flat response`() {
         val entity = getHealthStatus(port)
-        Assertions.assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
 
-        val json = Gson().fromJson<JsonObject>(entity.body, JsonObject::class.java)
-        val rabbitHealth = json.get("rabbit").asJsonObject
-        Assertions.assertThat(rabbitHealth.get("status").asString).isEqualTo("UP")
+        assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(valueAt("/rabbit/status", entity)).isEqualTo("UP")
     }
 
 }
@@ -75,11 +76,9 @@ class HealthStatusFlatteningEnabledIT : HealthStatusITBase() {
     @Test
     fun `should return flat response`() {
         val entity = getHealthStatus(port)
-        Assertions.assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
 
-        val json = Gson().fromJson<JsonObject>(entity.body, JsonObject::class.java)
-        val rabbitHealth = json.get("rabbit").asJsonObject
-        Assertions.assertThat(rabbitHealth.get("status").asString).isEqualTo("UP")
+        assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(valueAt("/rabbit/status", entity)).isEqualTo("UP")
     }
 
 }
@@ -90,14 +89,9 @@ class HealthStatusFlatteningDisabledIT : HealthStatusITBase() {
     @Test
     fun `should return flat response`() {
         val entity = getHealthStatus(port)
+
         Assertions.assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
-
-        val json = Gson().fromJson<JsonObject>(entity.body, JsonObject::class.java)
-        val details = json.get("details").asJsonObject
-        val rabbitHealth = details.get("rabbit").asJsonObject
-        val statusHealth = rabbitHealth.get("status").asJsonObject
-
-        Assertions.assertThat(statusHealth.get("code").asString).isEqualTo("UP")
+        assertThat(valueAt("/details/rabbit/status", entity)).isEqualTo("UP")
     }
 
 }

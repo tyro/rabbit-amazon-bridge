@@ -16,8 +16,9 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.config
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.tyro.oss.rabbit_amazon_bridge.monitoring.HealthTypeAdapter
 import com.tyro.oss.rabbit_amazon_bridge.poller.SQSPollersConfigurer
 import org.springframework.beans.factory.annotation.Value
@@ -35,9 +36,14 @@ import org.springframework.jmx.support.RegistrationPolicy
 class MainConfig {
 
     @Bean
+    @Primary
     @ConditionalOnProperty("flat.healthcheck.response.format")
-    fun gson() : Gson =
-            GsonBuilder().registerTypeAdapter(Health::class.java, HealthTypeAdapter()).create()
+    fun objectMapper() = ObjectMapper().apply {
+        registerModule(KotlinModule())
+        val module = SimpleModule()
+        module.addSerializer(Health::class.java, HealthTypeAdapter())
+        registerModule(module)
+    }
 
     @Bean
     @ConditionalOnMissingBean(name = ["artifactId"])
