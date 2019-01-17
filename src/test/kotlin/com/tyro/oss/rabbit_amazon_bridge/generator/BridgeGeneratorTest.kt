@@ -159,7 +159,7 @@ class BridgeGeneratorTest {
         val sqsMessageListener = deadletteringMessageListener.messageListener as SqsForwardingMessageListener
         assertThat(sqsMessageListener.messageTransformer).isInstanceOf(DoNothingMessageTransformer::class.java)
     }
-    
+
     @Test
     fun `should generate sqs bridge with DoNothingMessageTransformer when transformationSpecs is empty`() {
         val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = JsonArray())
