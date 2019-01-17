@@ -79,5 +79,5 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
     }
 
     private fun createMessageTransformer(transformationSpecs: JsonArray?)
-            = if (transformationSpecs != null) JoltMessageTransformer(transformationSpecs) else DoNothingMessageTransformer()
+            = if (transformationSpecs?.size() ?: 0 > 0) JoltMessageTransformer(transformationSpecs) else DoNothingMessageTransformer()
 }
