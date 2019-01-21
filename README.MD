@@ -96,6 +96,14 @@ We mostly for shifting (which we use to strip out sensitive fields) and/or field
 ]
 ```
 
+#### Bridge Properties
+
+field | description
+-------|------------
+from | The endpoint messages will be received from, currently SQS, or Rabbit
+to | The endpoint to route messages to, current rabbit -> SQS or SNS, or SQS -> Rabbit
+shouldForwardMessages | Tells the application not to configure the bridge, disabling it.
+
 ### Customised properties
 We've added a few custom properties
 
