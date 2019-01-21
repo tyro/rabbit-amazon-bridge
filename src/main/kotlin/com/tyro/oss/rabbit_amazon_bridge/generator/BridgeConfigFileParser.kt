@@ -40,9 +40,6 @@ class BridgeConfigFileParser(@Autowired val bridgeConfigResources: List<Resource
         check(bridges.all { it.from != null }) { "A 'from' definition is required" }
 
         bridges.fromRabbit().apply {
-            check(none {it.transformationSpecs == null })
-            { "Rabbit definitions should have a transformation specs" }
-
             check(all { hasAValidJoltSpecIfPresent(it) }) { "Invalid transformationSpec" }
 
             check(all {
