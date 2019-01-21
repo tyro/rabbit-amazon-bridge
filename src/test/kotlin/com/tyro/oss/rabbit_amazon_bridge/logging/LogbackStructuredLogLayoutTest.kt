@@ -20,6 +20,7 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.spi.LoggingEvent
 import com.google.gson.Gson
+import com.tyro.oss.randomdata.RandomString.randomString
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -27,13 +28,15 @@ import java.lang.RuntimeException
 
 class LogbackStructuredLogLayoutTest {
 
-    private lateinit var layout: LogbackStructuredLogLayout
 
-    @Before
-    fun setUp() {
-        layout = LogbackStructuredLogLayout()
-        layout.artifactId = "rabbit-amazon-bridge"
-        layout.artifactVersion = "1.0.0"
+    private fun randomLogLayout(artifactId: String? = randomString()) =
+        LogbackStructuredLogLayout().apply {
+            if (artifactId != null) {
+                this.artifactId = artifactId
+            }
+            this.artifactVersion = randomString()
+            this.syslogFormat = randomString()
+            this.logType = randomString()
     }
 
     @Test
@@ -41,13 +44,32 @@ class LogbackStructuredLogLayoutTest {
         val logger = LoggerContext().getLogger("test-logger")
         val event = LoggingEvent(null, logger, Level.INFO, "test", null, null)
 
+        val layout = randomLogLayout()
         val message = layout.doLayout(event)
 
         val logEvent = Gson().fromJson(message, LogbackStructuredLogLayout.LogEventEnvelope::class.java)
         assertThat(logEvent.artifactId).isEqualTo(layout.artifactId)
         assertThat(logEvent.artifactVersion).isEqualTo(layout.artifactVersion)
-        assertThat(logEvent.logType).isEqualTo("moneyswitch")
-        assertThat(logEvent.syslogFormat).isEqualTo("tyro-app-scrubbed")
+        assertThat(logEvent.logType).isEqualTo(layout.logType)
+        assertThat(logEvent.syslogFormat).isEqualTo(layout.syslogFormat)
+        assertThat(logEvent.timestamp).isNotBlank()
+        assertThat(logEvent.event).isEqualTo("test")
+        assertThat(logEvent.logLevel).isEqualTo(Level.INFO.levelStr)
+    }
+
+    @Test
+    fun shouldDefaultArtifactAndVersionWhenNotProvided() {
+        val logger = LoggerContext().getLogger("test-logger")
+        val event = LoggingEvent(null, logger, Level.INFO, "test", null, null)
+
+        val layout = randomLogLayout(null)
+        val message = layout.doLayout(event)
+
+        val logEvent = Gson().fromJson(message, LogbackStructuredLogLayout.LogEventEnvelope::class.java)
+        assertThat(logEvent.artifactId).isEqualTo("rabbit-amazon-bridge")
+        assertThat(logEvent.artifactVersion).isEqualTo(layout.artifactVersion)
+        assertThat(logEvent.logType).isEqualTo(layout.logType)
+        assertThat(logEvent.syslogFormat).isEqualTo(layout.syslogFormat)
         assertThat(logEvent.timestamp).isNotBlank()
         assertThat(logEvent.event).isEqualTo("test")
         assertThat(logEvent.logLevel).isEqualTo(Level.INFO.levelStr)
@@ -58,14 +80,15 @@ class LogbackStructuredLogLayoutTest {
         val logger = LoggerContext().getLogger("test-logger")
         val runtimeException = RuntimeException("message")
         val event = LoggingEvent(null, logger, Level.ERROR, "test", runtimeException, null)
-        
+
+        val layout = randomLogLayout()
         val message = layout.doLayout(event)
 
         val logEvent = Gson().fromJson(message, LogbackStructuredLogLayout.LogErrorEventEnvelope::class.java)
         assertThat(logEvent.artifactId).isEqualTo(layout.artifactId)
         assertThat(logEvent.artifactVersion).isEqualTo(layout.artifactVersion)
-        assertThat(logEvent.logType).isEqualTo("moneyswitch")
-        assertThat(logEvent.syslogFormat).isEqualTo("tyro-app-scrubbed")
+        assertThat(logEvent.logType).isEqualTo(layout.logType)
+        assertThat(logEvent.syslogFormat).isEqualTo(layout.syslogFormat)
         assertThat(logEvent.timestamp).isNotBlank()
         assertThat(logEvent.event).isEqualTo("test")
         assertThat(logEvent.logLevel).isEqualTo(Level.ERROR.levelStr)
