@@ -19,6 +19,7 @@ package com.tyro.oss.rabbit_amazon_bridge.poller
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.tyro.oss.rabbit_amazon_bridge.generator.Bridge
 import com.tyro.oss.rabbit_amazon_bridge.generator.RabbitCreationService
+import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.AsyncRabbitTemplate
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,6 +40,9 @@ class SQSPollersConfigurer(
         @Value(value = "\${default.incoming.message.id.key:#{null}}") val messageIdKey: String?
 
 ) : SchedulingConfigurer {
+
+    private val LOG = LoggerFactory.getLogger(SchedulingConfigurer::class.java)
+
     @Bean
     fun asyncRabbitTemplate(): AsyncRabbitTemplate {
         return AsyncRabbitTemplate(rabbitTemplate)
@@ -46,8 +50,7 @@ class SQSPollersConfigurer(
 
     override fun configureTasks(taskRegistrar: ScheduledTaskRegistrar) {
 
-        bridgesFromSQS.forEach {
-
+        bridgesFromSQS.filter(Bridge::isForwardingMessagesEnabled).forEach {
             val queueName = it.from.sqs!!.name
             val queueUrl = amazonSQS.getQueueUrl(queueName).queueUrl!!
             rabbitCreationService.createExchange(it.to.rabbit!!.exchange)
@@ -56,6 +59,8 @@ class SQSPollersConfigurer(
             val sqsDispatcher = SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName, messageIdKey)
 
             taskRegistrar.addFixedDelayTask(sqsDispatcher, 20)
+
+            LOG.info("Configured bridge from SQS $queueName to Rabbit ${it.to.rabbit!!.exchange}/$queueName")
         }
     }
 }
