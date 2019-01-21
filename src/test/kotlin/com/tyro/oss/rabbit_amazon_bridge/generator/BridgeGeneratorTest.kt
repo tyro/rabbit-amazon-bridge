@@ -24,6 +24,7 @@ import com.nhaarman.mockito_kotlin.whenever
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.DoNothingMessageTransformer
 import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.JoltMessageTransformer
 import com.tyro.oss.randomdata.RandomBoolean.randomBoolean
 import org.assertj.core.api.Assertions.assertThat
@@ -137,5 +138,45 @@ class BridgeGeneratorTest {
         assertThat(sqsMessageListener.queueName).isEqualTo(bridge.to.sqs?.name)
         assertThat(sqsMessageListener.queueMessagingTemplate).isEqualTo(queueMessagingTemplate)
         assertThat(((sqsMessageListener.messageTransformer as JoltMessageTransformer).chainr)).isNotNull
+    }
+
+    @Test
+    fun `should generate sqs bridge with DoNothingMessageTransformer when transformationSpecs is null`() {
+        val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = null)
+        val exchange = mock<Exchange>()
+        val deadletterExchange = mock<Exchange>()
+        val queue = mock<Queue>()
+        val deadletterQueue = mock<Queue>()
+        val index = 0
+
+        val fromRabbit = bridge.from.rabbit!!
+        whenever(deadLetteringrabbitCreationService.createExchange(fromRabbit.exchange)).thenReturn(Pair(exchange, deadletterExchange))
+        whenever(deadLetteringrabbitCreationService.createQueue(fromRabbit.queueName, fromRabbit.exchange)).thenReturn(Pair(queue, deadletterQueue))
+
+        val endPoint = bridgeGenerator.generateFromRabbit(index, bridge)
+
+        val deadletteringMessageListener = endPoint.messageListener as DeadletteringMessageListener
+        val sqsMessageListener = deadletteringMessageListener.messageListener as SqsForwardingMessageListener
+        assertThat(sqsMessageListener.messageTransformer).isInstanceOf(DoNothingMessageTransformer::class.java)
+    }
+
+    @Test
+    fun `should generate sqs bridge with DoNothingMessageTransformer when transformationSpecs is empty`() {
+        val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = JsonArray())
+        val exchange = mock<Exchange>()
+        val deadletterExchange = mock<Exchange>()
+        val queue = mock<Queue>()
+        val deadletterQueue = mock<Queue>()
+        val index = 0
+
+        val fromRabbit = bridge.from.rabbit!!
+        whenever(deadLetteringrabbitCreationService.createExchange(fromRabbit.exchange)).thenReturn(Pair(exchange, deadletterExchange))
+        whenever(deadLetteringrabbitCreationService.createQueue(fromRabbit.queueName, fromRabbit.exchange)).thenReturn(Pair(queue, deadletterQueue))
+
+        val endPoint = bridgeGenerator.generateFromRabbit(index, bridge)
+
+        val deadletteringMessageListener = endPoint.messageListener as DeadletteringMessageListener
+        val sqsMessageListener = deadletteringMessageListener.messageListener as SqsForwardingMessageListener
+        assertThat(sqsMessageListener.messageTransformer).isInstanceOf(DoNothingMessageTransformer::class.java)
     }
 }
