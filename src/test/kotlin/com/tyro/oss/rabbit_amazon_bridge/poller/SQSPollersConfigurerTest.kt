@@ -18,10 +18,7 @@ package com.tyro.oss.rabbit_amazon_bridge.poller
 
 import com.amazonaws.services.sqs.AmazonSQSAsync
 import com.amazonaws.services.sqs.model.GetQueueUrlResult
-import com.nhaarman.mockito_kotlin.argumentCaptor
-import com.nhaarman.mockito_kotlin.eq
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
+import com.nhaarman.mockito_kotlin.*
 import com.tyro.oss.rabbit_amazon_bridge.generator.RabbitCreationService
 import com.tyro.oss.rabbit_amazon_bridge.generator.fromSQSToRabbitInstance
 import com.tyro.oss.randomdata.RandomString.randomString
@@ -52,9 +49,9 @@ class SQSPollersConfigurerTest{
     @Test
     fun `Should register the bridges`() {
         val bridgesFromSQS =  listOf(
-                fromSQSToRabbitInstance(),
-                fromSQSToRabbitInstance(),
-                fromSQSToRabbitInstance()
+                fromSQSToRabbitInstance().copy(shouldForwardMessages = true),
+                fromSQSToRabbitInstance().copy(shouldForwardMessages = true),
+                fromSQSToRabbitInstance().copy(shouldForwardMessages = true)
         )
         val messageIdKey = randomString()
 
@@ -76,7 +73,7 @@ class SQSPollersConfigurerTest{
 
         val dispatchers = dispatcherCaptor.allValues
 
-        assertThat(bridgesFromSQS.size).isEqualTo(dispatchers.distinct().size)
+        assertThat(dispatchers.distinct().size).isEqualTo(bridgesFromSQS.size)
 
         bridgesFromSQS.forEach { bridge ->
             val dispatcher = dispatchers.find { it.sqsReceiver.getQueueName() == bridge.from.sqs!!.name}!!
@@ -90,4 +87,18 @@ class SQSPollersConfigurerTest{
 
     }
 
+    @Test
+    fun `should not register bridges that are set to not forward messages`() {
+        val bridgesFromSQS =  listOf(
+                fromSQSToRabbitInstance().copy(shouldForwardMessages = false)
+        )
+        val messageIdKey = randomString()
+
+        val config = SQSPollersConfigurer(amazonSQS, bridgesFromSQS, rabbitTemplate, rabbitCreationService, messageIdKey)
+        config.configureTasks(taskRegistrar)
+
+        verifyZeroInteractions(taskRegistrar)
+        verifyZeroInteractions(amazonSQS)
+        verifyZeroInteractions(rabbitCreationService)
+    }
 }

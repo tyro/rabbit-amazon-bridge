@@ -21,6 +21,7 @@ import com.google.gson.JsonArray
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
+import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.DoNothingMessageTransformer
 import com.tyro.oss.rabbit_amazon_bridge.messagetransformer.JoltMessageTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerEndpoint
@@ -77,5 +78,6 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
         else -> throw IllegalStateException("")
     }
 
-    private fun createMessageTransformer(transformationSpecs: JsonArray?) = JoltMessageTransformer(transformationSpecs!!)
+    private fun createMessageTransformer(transformationSpecs: JsonArray?)
+            = if (transformationSpecs?.size() ?: 0 > 0) JoltMessageTransformer(transformationSpecs) else DoNothingMessageTransformer()
 }
