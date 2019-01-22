@@ -56,12 +56,16 @@ class LogbackStructuredLogLayout : LayoutBase<ILoggingEvent>() {
                     event.level.levelStr,
                     syslogFormat,
                     event.formattedMessage,
-                    throwable,
+                    LogException(
+                            throwable.javaClass.name,
+                            throwable.message,
+                            throwable.stackTrace.joinToString { it.toString() + "\n"  }
+                    ),
                     emptyMap())) + "\n"
         }
     }
 
-    class LogErrorEventEnvelope internal constructor(
+    class LogErrorEventEnvelope (
             timestamp: String,
             artifactId: String,
             artifactVersion: String,
@@ -69,15 +73,11 @@ class LogbackStructuredLogLayout : LayoutBase<ILoggingEvent>() {
             logLevel: String,
             syslogFormat: String,
             event: Any,
-            exception: Throwable,
+            val exception: LogException,
             context: Map<String, Any>
-    ) : LogEventEnvelope(timestamp, artifactId, artifactVersion, logType, logLevel, syslogFormat, event, context) {
+    ) : LogEventEnvelope(timestamp, artifactId, artifactVersion, logType, logLevel, syslogFormat, event, context)
 
-        val exception: LogException = LogException(exception)
-
-    }
-
-    open class LogEventEnvelope internal constructor(
+    open class LogEventEnvelope (
             val timestamp: String,
             val artifactId: String,
             val artifactVersion: String,
@@ -88,17 +88,6 @@ class LogbackStructuredLogLayout : LayoutBase<ILoggingEvent>() {
             val context: Map<String, Any>
     )
 
-    class LogException(exception: Throwable) {
-        val exception_class: String
-        val exception_message: String?
-        val stacktrace: String
-
-        init {
-            Objects.requireNonNull(exception, "exception must be supplied")
-            this.exception_class = exception.javaClass.name
-            this.exception_message = exception.message
-            this.stacktrace = exception.stackTrace.joinToString { it.toString() + "\n"  }
-        }
-    }
+    class LogException(val exception_class: String, val exception_message: String?, val stacktrace: String)
 
 }

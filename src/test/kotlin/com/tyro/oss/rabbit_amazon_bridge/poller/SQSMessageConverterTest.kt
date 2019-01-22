@@ -16,7 +16,7 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.poller
 
-import com.google.gson.JsonParser
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.tyro.oss.randomdata.RandomString.*
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.IncomingAwsMessage
 import org.assertj.core.api.Assertions.*
@@ -49,12 +49,12 @@ class SQSMessageConverterTest {
             messageId = randomUUID()
         }, randomString(), randomString())
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            assertThat(it.get("interest").asString).isEqualTo("0.1")
-            assertThat(it.get("time").asString).isEqualTo("2018-08-24T03:12:34.455Z")
-            assertThat(it.get("value").asString).isEqualTo("9")
-            assertThat(it.get("total").asString).isEqualTo("9")
-            assertThat(it.get("uuid").asString).isEqualTo("894a3099-cd49-4f84-bc53-c7b46bc11079")
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            assertThat(it.get("interest").asText()).isEqualTo("0.1")
+            assertThat(it.get("time").asText()).isEqualTo("2018-08-24T03:12:34.455Z")
+            assertThat(it.get("value").asText()).isEqualTo("9")
+            assertThat(it.get("total").asText()).isEqualTo("9")
+            assertThat(it.get("uuid").asText()).isEqualTo("894a3099-cd49-4f84-bc53-c7b46bc11079")
 
         }
     }
@@ -70,8 +70,8 @@ class SQSMessageConverterTest {
             messageId = randomMessageId
         }, prefix, messageIdKey)
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            val uniqueReference = it.get(messageIdKey).asString
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            val uniqueReference = it.get(messageIdKey).asText()
             assertThat(uniqueReference).isEqualTo("$prefix/$randomMessageId")
         }
     }
@@ -84,8 +84,8 @@ class SQSMessageConverterTest {
             messageId = randomUUID()
         }, prefix,  randomString())
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            assertThat(it.getAsJsonObject("MyMessage").get("payload").asString).isEqualTo(randomPayload)
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            assertThat(it.at("/MyMessage/payload").asText()).isEqualTo(randomPayload)
         }
     }
 
@@ -103,8 +103,8 @@ class SQSMessageConverterTest {
 
         val convertedMessage = SQSMessageConverter().convert(incomingMessage, prefix, messageIdKey)
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            val uniqueReference = it.get(messageIdKey).asString
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            val uniqueReference = it.get(messageIdKey).asText()
             assertThat(uniqueReference).isEqualTo("$prefix/$randomMessageId")
         }
     }
@@ -122,6 +122,6 @@ class SQSMessageConverterTest {
 
         val convertedMessage = SQSMessageConverter().convert(incomingMessage, prefix, null)
 
-        assertThat(JsonParser().parse(convertedMessage)).isEqualTo(JsonParser().parse(messageBodyFromSQS))
+        assertThat(jacksonObjectMapper().readTree(convertedMessage)).isEqualTo(jacksonObjectMapper().readTree(messageBodyFromSQS))
     }
 }

@@ -16,8 +16,6 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
-import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener

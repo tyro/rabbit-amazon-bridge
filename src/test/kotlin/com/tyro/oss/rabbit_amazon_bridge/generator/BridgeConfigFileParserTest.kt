@@ -19,7 +19,6 @@ package com.tyro.oss.rabbit_amazon_bridge.generator
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
@@ -40,11 +39,13 @@ class BridgeConfigFileParserTest {
                   }]"""
     }
 
+    private val objectMapper = jacksonObjectMapper()
+
     @Test
     fun `should generate an empty list for an empty file`() {
         val resource = emptyList<Resource>()
         assertThatThrownBy {
-            BridgeConfigFileParser(jacksonObjectMapper(), resource).parse()
+            BridgeConfigFileParser(objectMapper, resource).parse()
         }.isInstanceOf(IllegalStateException::class.java).hasMessage("Bridge config should be defined")
     }
 
@@ -67,12 +68,12 @@ class BridgeConfigFileParserTest {
                        }
                      }]""")
 
-        val bridges: List<Bridge> = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges: List<Bridge> = BridgeConfigFileParser(objectMapper, payload).parse()
 
         assertThat(bridges.size).isEqualTo(1)
         bridges[0].let {
             assertThat(it.transformationSpecs as List<Any>)
-                    .isEqualTo(jacksonObjectMapper().readValue(TRANSFORMATION_SPECS))
+                    .isEqualTo(objectMapper.readValue(TRANSFORMATION_SPECS))
         }
     }
 
@@ -94,7 +95,7 @@ class BridgeConfigFileParserTest {
                           }]"""
         val payload = configFileResources(resourceContent)
 
-        val bridges: List<Bridge> = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges: List<Bridge> = BridgeConfigFileParser(objectMapper, payload).parse()
 
         assertThat(bridges.size).isEqualTo(1)
         assertThat(bridges[0].transformationSpecs).isNull()
@@ -119,7 +120,7 @@ class BridgeConfigFileParserTest {
                           }]"""
         val payload = configFileResources(resourceContent)
 
-        val bridges: List<Bridge> = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges: List<Bridge> = BridgeConfigFileParser(objectMapper, payload).parse()
 
         assertThat(bridges.size).isEqualTo(1)
         bridges[0].from.rabbit!!.let {
@@ -149,7 +150,7 @@ class BridgeConfigFileParserTest {
                           }]"""
         val payload = configFileResources(resourceFileContents, resourceFileContents)
 
-        val bridges: List<Bridge> = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges: List<Bridge> = BridgeConfigFileParser(objectMapper, payload).parse()
         assertThat(bridges.size).isEqualTo(2)
     }
 
@@ -172,7 +173,7 @@ class BridgeConfigFileParserTest {
                             }
                           }]""")
 
-        val bridges: List<Bridge> = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges: List<Bridge> = BridgeConfigFileParser(objectMapper, payload).parse()
         assertThat(bridges.size).isEqualTo(1)
         assertThat(bridges[0].shouldForwardMessages).isEqualTo(null)
     }
@@ -195,7 +196,7 @@ class BridgeConfigFileParserTest {
                             }
                           }]""")
 
-        val bridges = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges = BridgeConfigFileParser(objectMapper, payload).parse()
         assertThat(bridges.size).isEqualTo(1)
 
         bridges[0].from.rabbit!!.let {
@@ -211,9 +212,9 @@ class BridgeConfigFileParserTest {
     fun `should return multiple definitions`() {
         val snsInstance = fromRabbitToSNSInstance()
         val sqsInstance = fromRabbitToSQSInstance()
-        val payload = configFileResources(Gson().toJson(listOf(snsInstance, sqsInstance)))
+        val payload = configFileResources(objectMapper.writeValueAsString(listOf(snsInstance, sqsInstance)))
 
-        val bridges = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges = BridgeConfigFileParser(objectMapper, payload).parse()
         assertThat(bridges.size).isEqualTo(2)
         assertThat(bridges).contains(sqsInstance, snsInstance)
     }
@@ -245,7 +246,7 @@ class BridgeConfigFileParserTest {
                             }
                           }]""")
 
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payload).parse() }
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payload).parse() }
                 .isInstanceOf(IllegalStateException::class.java).hasMessage("Invalid transformationSpec")
     }
 
@@ -262,7 +263,7 @@ class BridgeConfigFileParserTest {
                         "transformationSpecs": $TRANSFORMATION_SPECS
                 }]""")
 
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payload).parse() }.isInstanceOf(MissingKotlinParameterException::class.java)
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payload).parse() }.isInstanceOf(MissingKotlinParameterException::class.java)
     }
 
     @Test
@@ -279,7 +280,7 @@ class BridgeConfigFileParserTest {
                       "to" : {}
                     }]""")
 
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payload).parse() }
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payload).parse() }
                 .isInstanceOf(IllegalStateException::class.java).hasMessage("An SNS or SQS definition is required if messages are coming from rabbit")
     }
 
@@ -304,7 +305,7 @@ class BridgeConfigFileParserTest {
                             }
                           }]""")
 
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payload).parse() }
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payload).parse() }
                 .isInstanceOf(IllegalStateException::class.java).hasMessage("We do not currently support fanout to multiple AWS destinations in one bridge")
     }
 
@@ -318,7 +319,7 @@ class BridgeConfigFileParserTest {
                          }
                        }
                      }]""")
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payload).parse() }
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payload).parse() }
                 .isInstanceOf(MissingKotlinParameterException::class.java)
     }
 
@@ -339,7 +340,7 @@ class BridgeConfigFileParserTest {
                           }]""")
 
 
-        val bridges = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges = BridgeConfigFileParser(objectMapper, payload).parse()
         assertThat(bridges.size).isEqualTo(1)
 
         assertThat(bridges[0].to.rabbit?.exchange).isEqualTo("exchange-name-2")
@@ -364,7 +365,7 @@ class BridgeConfigFileParserTest {
                           }]""")
 
 
-        val bridges = BridgeConfigFileParser(jacksonObjectMapper(), payload).parse()
+        val bridges = BridgeConfigFileParser(objectMapper, payload).parse()
         assertThat(bridges.size).isEqualTo(1)
 
         assertThat(bridges[0].to.rabbit?.exchange).isEqualTo("exchange-name-2")
@@ -400,9 +401,9 @@ class BridgeConfigFileParserTest {
                             }
                           }]""")
 
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payloadSQStoSQS).parse() }
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payloadSQStoSQS).parse() }
                 .isInstanceOf(IllegalStateException::class.java).hasMessage("Forwarding SQS to SQS/SNS is not supported")
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payloadSQStoSNS).parse() }
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payloadSQStoSNS).parse() }
                 .isInstanceOf(IllegalStateException::class.java).hasMessage("Forwarding SQS to SQS/SNS is not supported")
     }
 
@@ -417,7 +418,7 @@ class BridgeConfigFileParserTest {
                       "to" : {}
                     }]""")
 
-        assertThatThrownBy { BridgeConfigFileParser(jacksonObjectMapper(), payload).parse() }
+        assertThatThrownBy { BridgeConfigFileParser(objectMapper, payload).parse() }
                 .isInstanceOf(IllegalStateException::class.java).hasMessage("An rabbit definition is required for messages coming from SQS")
     }
 

@@ -19,7 +19,6 @@ package com.tyro.oss.rabbit_amazon_bridge.poller
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.gson.*
 
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.IncomingAwsMessage
 
