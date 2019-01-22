@@ -39,64 +39,70 @@ We mostly for shifting (which we use to strip out sensitive fields) and/or field
 ```json
 [
   {
-    from : {
-      rabbit: {
-        exchange: exchange-name-1,
-        queueName: queue-name-1,
-        routingKey: routing-key-1,
-        transformationSpecs: [{
-          operation: shift,
-          spec: {
-            fieldA: fieldA,
-            fieldB: fieldB
-          }
-        }]
+    "from" : {
+      "rabbit": {
+        "exchange": "exchange-name-1",
+        "queueName": "queue-name-1",
+        "routingKey": "routing-key-1"
       }
     },
-    to : {
-      sns: {
-        name:rabbit-bridge-test-topic
+    "transformationSpecs": [{
+      "operation": "shift",
+      "spec": {
+        "fieldA": "fieldA",
+        "fieldB": "fieldB"
+      }
+    }],
+    "to" : {
+      "sns": {
+        "name":"rabbit-bridge-test-topic"
       }
     }
   },
   {
-    from : {
-      rabbit: {
-        exchange: exchange-name-2,
-        queueName: queue-name-2,
-        routingKey: routing-key-2,
-        transformationSpecs: [{
-          operation: shift,
-          spec: {
-            fieldC: fieldC,
-            fieldB: {
-              bid : bid
-            }
-          }
-        }]
+    "from" : {
+      "rabbit": {
+        "exchange": "exchange-name-2",
+        "queueName": "queue-name-2",
+        "routingKey": "routing-key-2"
       }
     },
-    to : {
-      sqs: {
-        name:rabbit-bridge-test-queue
+    "transformationSpecs": [{
+      "operation": "shift",
+      "spec": {
+        "fieldA": "fieldA",
+        "fieldB": "fieldB"
+      }
+    }],
+    "to" : {
+      "sqs": {
+        "name":"rabbit-bridge-test-queue"
       }
     }
   },
   {
-    from : {
-      sqs: {
-        name:rabbit-bridge-incoming-test-queue
+    "from" : {
+      "sqs": {
+        "name":"rabbit-bridge-incoming-test-queue"
       }
     },
-    to : {
-      rabbit: {
-        exchange: exchange-name-3,
-        routingKey: routing-key-3
+    "to" : {
+      "rabbit": {
+        "exchange": "exchange-name-3",
+        "routingKey": "routing-key-3"
       }
     }
   }
 ]
 ```
+
+#### Bridge Properties
+
+field | description
+-------|------------
+from | The endpoint messages will be received from, currently SQS, or Rabbit
+to | The endpoint to route messages to, current rabbit -> SQS or SNS, or SQS -> Rabbit
+shouldForwardMessages | Tells the application not to configure the bridge, disabling it.
 
 ### Customised properties
 We've added a few custom properties

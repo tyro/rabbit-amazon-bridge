@@ -19,8 +19,7 @@ package com.tyro.oss.rabbit_amazon_bridge.logging
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.classic.spi.ThrowableProxy
 import ch.qos.logback.core.LayoutBase
-import com.google.gson.Gson
-import org.springframework.beans.factory.annotation.Value
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -29,34 +28,33 @@ import java.util.*
 @Service
 class LogbackStructuredLogLayout : LayoutBase<ILoggingEvent>() {
 
-    private val gson = Gson()
+    private val objectMapper = ObjectMapper()
 
-    @Value("\${artifact.id:undefined}")
-    var artifactId: String? = null
-
-    @Value("\${artifact.version:undefined}")
+    var artifactId: String? = "rabbit-amazon-bridge"
     var artifactVersion: String? = null
+    var logType: String = "app"
+    var syslogFormat: String = "structured"
 
     override fun doLayout(event: ILoggingEvent): String {
         if (event.throwableProxy == null) {
-            return gson.toJson(LogEventEnvelope(
+            return objectMapper.writeValueAsString(LogEventEnvelope(
                     ZonedDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
                     artifactId!!,
                     artifactVersion!!,
-                    "moneyswitch",
+                    logType,
                     event.level.levelStr,
-                    SCRUBBED_TAG,
+                    syslogFormat,
                     event.formattedMessage,
                     emptyMap())) + "\n"
         } else {
             val throwable = (event.throwableProxy as ThrowableProxy).throwable
-            return gson.toJson(LogErrorEventEnvelope(
+            return objectMapper.writeValueAsString(LogErrorEventEnvelope(
                     ZonedDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME),
                     artifactId!!,
                     artifactVersion!!,
-                    "moneyswitch",
+                    logType,
                     event.level.levelStr,
-                    SCRUBBED_TAG,
+                    syslogFormat,
                     event.formattedMessage,
                     throwable,
                     emptyMap())) + "\n"
@@ -103,7 +101,4 @@ class LogbackStructuredLogLayout : LayoutBase<ILoggingEvent>() {
         }
     }
 
-    companion object {
-        private val SCRUBBED_TAG = "tyro-app-scrubbed"
-    }
 }
