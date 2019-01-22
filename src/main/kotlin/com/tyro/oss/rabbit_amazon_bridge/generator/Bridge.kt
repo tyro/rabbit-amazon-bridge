@@ -16,11 +16,9 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
-import com.google.gson.JsonArray
-
 data class Bridge(
         val from: FromDefinition,
-        val transformationSpecs: JsonArray?,
+        val transformationSpecs: List<Any>?,
         val to: ToDefinition,
         val shouldForwardMessages: Boolean?,
         val description: String? = null) {

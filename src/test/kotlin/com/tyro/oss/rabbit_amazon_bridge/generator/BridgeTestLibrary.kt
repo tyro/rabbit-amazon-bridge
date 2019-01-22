@@ -16,7 +16,6 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
-import com.google.gson.JsonArray
 import com.tyro.oss.arbitrater.arbitraryInstance
 import com.tyro.oss.randomdata.RandomBoolean.randomBoolean
 import com.tyro.oss.randomdata.RandomString.randomString
@@ -53,4 +52,4 @@ private fun sqsFromDefinition() = FromDefinition(
             sqs = SqsDefinition::class.arbitraryInstance()
         )
 
-private fun transformationSpecs() = JsonArray()
+private fun transformationSpecs() = emptyList<Any>()
