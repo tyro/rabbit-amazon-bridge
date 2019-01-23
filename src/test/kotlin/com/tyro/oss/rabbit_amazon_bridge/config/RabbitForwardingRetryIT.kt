@@ -70,10 +70,7 @@ class RabbitForwardingRetryDisabledIT {
 
     @Test
     fun `should not have a retry operations advice configured when retry is disabled`() {
-        assertFailsWith<NullPointerException>{
-            // Spring rabbit has a bug in this getter, if it is null. I'm guessing it is never used
-            rabbitListenerContainerFactory.adviceChain
-        }
+        assertThat(rabbitListenerContainerFactory.adviceChain).isNull()
     }
 
 }
