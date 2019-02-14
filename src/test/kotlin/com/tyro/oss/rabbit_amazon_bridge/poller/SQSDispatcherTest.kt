@@ -17,7 +17,7 @@
 package com.tyro.oss.rabbit_amazon_bridge.poller
 
 import com.amazonaws.services.sqs.AmazonSQSAsync
-import com.google.gson.JsonParser
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.doThrow
 import com.nhaarman.mockito_kotlin.verify
@@ -52,17 +52,14 @@ class SQSDispatcherTest {
             "MessageId": "13dd9b5d-80fd-48c2-8d72-f825bfbb67fb"
         }"""
 
-
-
     @Test
     fun `should forward messages`() {
-
-        val jsonPayload = JsonParser().parse(messageFromSNS).asJsonObject
+        val jsonPayload = jacksonObjectMapper().readTree(messageFromSNS)
 
         val message = IncomingAwsMessage().apply {
-            this.body = jsonPayload.get("Body").asString
-            this.receiptHandle = jsonPayload.get("ReceiptHandle").asString
-            this.messageId = jsonPayload.get("MessageId").asString
+            this.body = jsonPayload.get("Body").asText()
+            this.receiptHandle = jsonPayload.get("ReceiptHandle").asText()
+            this.messageId = jsonPayload.get("MessageId").asText()
         }
 
         val queueUrl = randomString()
@@ -74,18 +71,18 @@ class SQSDispatcherTest {
         SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName, messageIdKey).run()
 
         verify(rabbitSender).send(SQSMessageConverter().convert(message, queueName, messageIdKey))
-        verify(amazonSQS).deleteMessageAsync(queueUrl, jsonPayload.get("ReceiptHandle").asString)
+        verify(amazonSQS).deleteMessageAsync(queueUrl, jsonPayload.get("ReceiptHandle").asText())
     }
 
     @Test
     fun `Should rollback the message to SQS if an exception is thrown by rabbit`() {
 
-        val jsonPayload = JsonParser().parse(messageFromSNS).asJsonObject
+        val jsonPayload = jacksonObjectMapper().readTree(messageFromSNS)
 
         val message = IncomingAwsMessage().apply {
-            this.body = jsonPayload.get("Body").asString
-            this.receiptHandle = jsonPayload.get("ReceiptHandle").asString
-            this.messageId = jsonPayload.get("MessageId").asString
+            this.body = jsonPayload.get("Body").asText()
+            this.receiptHandle = jsonPayload.get("ReceiptHandle").asText()
+            this.messageId = jsonPayload.get("MessageId").asText()
         }
 
         val queueUrl = randomString()
@@ -99,7 +96,7 @@ class SQSDispatcherTest {
             SQSDispatcher(amazonSQS, sqsReceiver, rabbitSender, queueUrl, queueName, messageIdKey).run()
         }
 
-        verify(amazonSQS).changeMessageVisibilityAsync(queueUrl, jsonPayload.get("ReceiptHandle").asString, 0)
+        verify(amazonSQS).changeMessageVisibilityAsync(queueUrl, jsonPayload.get("ReceiptHandle").asText(), 0)
     }
 
     @Test

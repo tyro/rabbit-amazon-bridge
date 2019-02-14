@@ -16,13 +16,15 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.poller
 
-import com.google.gson.*
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.IncomingAwsMessage
 
 
 class SQSMessageConverter {
-    private val jsonParser = JsonParser()
+    private val jsonParser = ObjectMapper()
 
     fun convert(message: IncomingAwsMessage, prefix: String, messageIdKey: String?): String {
 
@@ -31,10 +33,10 @@ class SQSMessageConverter {
 
         val payload = extractPayload(bodyJsonObject)
 
-        val jsonPayload = if (payload.isJsonObject) {
-            payload.asJsonObject
+        val jsonPayload = if (payload.isContainerNode) {
+            payload as ObjectNode
         } else {
-            jsonParser.parse(payload.asString).asJsonObject
+            payload.textValue().asJson()
         }
 
         return if (messageIdKey == null) {
@@ -45,22 +47,22 @@ class SQSMessageConverter {
 
     }
 
-    private fun payloadWithMessageId(jsonPayload: JsonObject, messageIdKey: String, prefix: String, incomingMessageId: String) =
+    private fun payloadWithMessageId(jsonPayload: ObjectNode, messageIdKey: String, prefix: String, incomingMessageId: String) =
         jsonPayload.apply {
-            addProperty(
+            put(
                     messageIdKey,
                     "$prefix/$incomingMessageId"
             )
         }.toString()
 
-    private fun extractPayload(jsonElement: JsonElement) =
-            if (jsonElement.isFromSNS()) {
-                jsonElement.asJsonObject.get("Message")
+    private fun extractPayload(jsonNode: JsonNode) =
+            if (jsonNode.isFromSNS()) {
+                jsonNode.get("Message")
             } else {
-                jsonElement
+                jsonNode
             }
 
-    private fun String.asJson() = jsonParser.parse(this).asJsonObject
+    private fun String.asJson() = jsonParser.readTree (this) as ObjectNode
 
-    private fun JsonElement.isFromSNS() = this.asJsonObject.has("Message")
+    private fun JsonNode.isFromSNS() = this.has("Message")
 }

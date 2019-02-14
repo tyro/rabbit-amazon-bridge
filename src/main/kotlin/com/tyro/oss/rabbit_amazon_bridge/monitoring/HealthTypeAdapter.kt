@@ -15,21 +15,19 @@
  */
 package com.tyro.oss.rabbit_amazon_bridge.monitoring
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonSerializationContext
-import com.google.gson.JsonSerializer
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import org.springframework.boot.actuate.health.Health
-import java.lang.reflect.Type
 
-class HealthTypeAdapter : JsonSerializer<Health> {
-
-    override fun serialize(src: Health, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
-        return JsonObject().apply {
-
-            src.status.code.let { addProperty("status", it) }
-            src.status.description.takeIf { it.isNotEmpty() }?.let { addProperty("description", it) }
-            src.details.forEach { key, value -> add(key, context.serialize(value)) }
+class HealthTypeAdapter : StdSerializer<Health>(Health::class.java) {
+    override fun serialize(src: Health, gen: JsonGenerator, provider: SerializerProvider) {
+        gen.writeStartObject()
+        src.status.code.let { gen.writeStringField("status", it) }
+        src.status.description.takeIf {  it.isNotEmpty() }?.let { gen.writeStringField("description", it) }
+        src.details.forEach { key, value ->
+            gen.writeObjectField(key, value)
         }
+        gen.writeEndObject()
     }
 }

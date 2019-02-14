@@ -16,8 +16,8 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
-import com.google.gson.Gson
-import com.google.gson.JsonArray
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
@@ -52,8 +52,6 @@ class BridgeGeneratorTest {
 
     private val shouldRetry = randomBoolean()
 
-    private val gson = Gson()
-
     companion object {
         const val TRANSFORMATION_SPECS = """[
                   {
@@ -72,14 +70,13 @@ class BridgeGeneratorTest {
                 deadLetteringrabbitCreationService,
                 queueMessagingTemplate,
                 topicNotificationMessagingTemplate,
-                gson,
                 shouldRetry
         )
     }
 
     @Test
     fun `should generate sns bridge`() {
-        val joltSpec = gson.fromJson<JsonArray>(TRANSFORMATION_SPECS, JsonArray::class.java)
+        val joltSpec = jacksonObjectMapper().readValue<List<Any>>(TRANSFORMATION_SPECS)
         val bridge = fromRabbitToSNSInstance().copy(transformationSpecs = joltSpec)
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
@@ -111,7 +108,7 @@ class BridgeGeneratorTest {
 
     @Test
     fun `should generate sqs bridge`() {
-        val joltSpec = gson.fromJson<JsonArray>(TRANSFORMATION_SPECS, JsonArray::class.java)
+        val joltSpec =jacksonObjectMapper().readValue<List<Any>>(TRANSFORMATION_SPECS)
         val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = joltSpec)
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
@@ -162,7 +159,7 @@ class BridgeGeneratorTest {
 
     @Test
     fun `should generate sqs bridge with DoNothingMessageTransformer when transformationSpecs is empty`() {
-        val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = JsonArray())
+        val bridge = fromRabbitToSQSInstance().copy(transformationSpecs = emptyList())
         val exchange = mock<Exchange>()
         val deadletterExchange = mock<Exchange>()
         val queue = mock<Queue>()

@@ -17,23 +17,22 @@
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
 import com.bazaarvoice.jolt.Chainr
-import com.bazaarvoice.jolt.JsonUtils
 import com.bazaarvoice.jolt.exception.SpecException
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Component
 
 @Component
-class BridgeConfigFileParser(@Autowired val bridgeConfigResources: List<Resource>) {
+class BridgeConfigFileParser(@Autowired val objectMapper: ObjectMapper, @Autowired val bridgeConfigResources: List<Resource>) {
 
     private val LOG = LoggerFactory.getLogger(BridgeConfigFileParser::class.java)
 
     fun parse(): List<Bridge> {
-        val bridges = bridgeConfigResources.mapNotNull {
-            Gson().fromJson<List<Bridge>>(it.inputStream.bufferedReader().readText())
+        val bridges = bridgeConfigResources.map {
+            objectMapper.readValue<List<Bridge>>(it.inputStream)
         }.flatten()
         check(bridges.isNotEmpty()) { "Bridge config should be defined" }
         check(bridges.all { it.to != null }) { "'To' definition is required" }
@@ -65,20 +64,16 @@ class BridgeConfigFileParser(@Autowired val bridgeConfigResources: List<Resource
     }
 
     private fun hasAValidJoltSpecIfPresent(it: Bridge): Boolean {
-        return if (it.transformationSpecs != null) {
-            try {
-                val toString = Gson().toJson(it.transformationSpecs)
-                val jsonToList = JsonUtils.jsonToList(toString)
-                Chainr.fromSpec(jsonToList)
-                true
-            } catch (e: SpecException) {
-                LOG.error("The provided jolt spec is invalid", e)
-                false
-            }
-        } else {
-            true
+        return when {
+            it.transformationSpecs == null -> true
+            it.transformationSpecs.isEmpty() -> true
+            else -> try {
+                    Chainr.fromSpec(it.transformationSpecs)
+                    true
+                } catch (e: SpecException) {
+                    LOG.error("The provided jolt spec is invalid", e)
+                    false
+                }
         }
     }
-
-    private inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object : TypeToken<T>() {}.type)
 }

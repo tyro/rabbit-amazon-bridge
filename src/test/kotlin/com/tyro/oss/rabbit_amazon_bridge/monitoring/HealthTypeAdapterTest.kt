@@ -15,10 +15,11 @@
  */
 package com.tyro.oss.rabbit_amazon_bridge.monitoring
 
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
-import com.google.gson.JsonNull
-import com.google.gson.JsonObject
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.springframework.boot.actuate.health.Health
@@ -26,20 +27,26 @@ import org.springframework.boot.actuate.health.Status
 
 class HealthTypeAdapterTest {
 
-    private val gson = GsonBuilder().registerTypeAdapter(Health::class.java, HealthTypeAdapter()).create()
+    private val mapper = ObjectMapper().apply {
+        registerModule(KotlinModule())
+        val module = SimpleModule()
+        module.addSerializer(Health::class.java, HealthTypeAdapter())
+        registerModule(module)
+    }
 
     @Test
     fun `should be able to convert null values`() {
-        val health: Health? = null
-
-        assertThat(gson.toJsonTree(health)).isEqualTo(JsonNull.INSTANCE)
+        assertThat(mapper.valueToTree<JsonNode>(null)).isEqualTo(null)
     }
 
     @Test
     fun `should be able to convert empty objects`() {
         val health = Health.Builder().build()
 
-        assertThat(health.toJson()).isEqualTo(JsonObject().apply { addProperty("status", "UNKNOWN") })
+        val expected = JsonNodeFactory.instance.objectNode()
+                .put("status", "UNKNOWN")
+
+        assertThat(health.toJson()).isEqualTo(expected)
     }
 
     @Test
@@ -48,9 +55,10 @@ class HealthTypeAdapterTest {
                 .status("SOME_STATUS")
                 .build()
 
-        assertThat(health.toJson()).isEqualTo(JsonObject().apply {
-            addProperty("status", "SOME_STATUS")
-        })
+        val expected = JsonNodeFactory.instance.objectNode()
+                .put("status", "SOME_STATUS")
+
+        assertThat(health.toJson()).isEqualTo(expected)
     }
 
     @Test
@@ -59,10 +67,11 @@ class HealthTypeAdapterTest {
                 .status(Status("SOME_STATUS", "Some description"))
                 .build()
 
-        assertThat(health.toJson()).isEqualTo(JsonObject().apply {
-            addProperty("status", "SOME_STATUS")
-            addProperty("description", "Some description")
-        })
+        val expected = JsonNodeFactory.instance.objectNode()
+                .put("status", "SOME_STATUS")
+                .put("description", "Some description")
+
+        assertThat(health.toJson()).isEqualTo(expected)
     }
 
     @Test
@@ -72,10 +81,11 @@ class HealthTypeAdapterTest {
                 .withException(RuntimeException("Oops!"))
                 .build()
 
-        assertThat(health.toJson()).isEqualTo(JsonObject().apply {
-            addProperty("status", "DOWN")
-            addProperty("error", "java.lang.RuntimeException: Oops!")
-        })
+        val expected = JsonNodeFactory.instance.objectNode()
+                .put("status", "DOWN")
+                .put("error", "java.lang.RuntimeException: Oops!")
+
+        assertThat(health.toJson()).isEqualTo(expected)
     }
 
     @Test
@@ -85,10 +95,11 @@ class HealthTypeAdapterTest {
                 .withDetail("key", "value")
                 .build()
 
-        assertThat(health.toJson()).isEqualTo(JsonObject().apply {
-            addProperty("status", "UP")
-            addProperty("key", "value")
-        })
+        val expected = JsonNodeFactory.instance.objectNode()
+                .put("status", "UP")
+                .put("key", "value")
+
+        assertThat(health.toJson()).isEqualTo(expected)
     }
 
     @Test
@@ -98,13 +109,12 @@ class HealthTypeAdapterTest {
                 .withDetail("db", Health.Builder().status(Status.UP).build())
                 .build()
 
-        assertThat(health.toJson()).isEqualTo(JsonObject().apply {
-            addProperty("status", "DOWN")
-            add("db", JsonObject().apply {
-                addProperty("status", "UP")
-            })
-        })
+        val expected = JsonNodeFactory.instance.objectNode()
+                .put("status", "DOWN")
+                .set("db", JsonNodeFactory.instance.objectNode().put("status", "UP"))
+
+        assertThat(health.toJson()).isEqualTo(expected)
     }
 
-    private fun Health.toJson(): JsonElement = gson.toJsonTree(this)
+    private fun Health.toJson(): JsonNode = mapper.valueToTree(this)
 }
