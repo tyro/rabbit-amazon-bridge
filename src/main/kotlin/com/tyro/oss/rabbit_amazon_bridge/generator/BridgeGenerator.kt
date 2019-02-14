@@ -16,8 +16,6 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.generator
 
-import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.DeadletteringMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SnsForwardingMessageListener
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.SqsForwardingMessageListener
@@ -35,7 +33,6 @@ import org.springframework.stereotype.Component
 class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationService,
                       @Autowired val queueMessagingTemplate: QueueMessagingTemplate,
                       @Autowired val topicNotificationMessagingTemplate: NotificationMessagingTemplate,
-                      @Autowired val gson: Gson,
                       @Value("\${spring.rabbitmq.listener.simple.retry.enabled:true}") val shouldRetry: Boolean) {
 
     private val LOG = LoggerFactory.getLogger(BridgeGenerator::class.java)
@@ -78,6 +75,6 @@ class BridgeGenerator(@Autowired val rabbitCreationService: RabbitCreationServic
         else -> throw IllegalStateException("")
     }
 
-    private fun createMessageTransformer(transformationSpecs: JsonArray?)
-            = if (transformationSpecs?.size() ?: 0 > 0) JoltMessageTransformer(transformationSpecs) else DoNothingMessageTransformer()
+    private fun createMessageTransformer(transformationSpecs: List<Any>?)
+            = if (transformationSpecs?.size ?: 0 > 0) JoltMessageTransformer(transformationSpecs) else DoNothingMessageTransformer()
 }

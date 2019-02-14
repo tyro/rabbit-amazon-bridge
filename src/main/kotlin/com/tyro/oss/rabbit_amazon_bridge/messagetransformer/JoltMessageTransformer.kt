@@ -18,13 +18,11 @@ package com.tyro.oss.rabbit_amazon_bridge.messagetransformer
 
 import com.bazaarvoice.jolt.Chainr
 import com.bazaarvoice.jolt.JsonUtils
-import com.google.gson.Gson
-import com.google.gson.JsonArray
 
 open class JoltMessageTransformer(val chainr: Chainr) : MessageTransformer {
 
-    constructor(transformationSpecs: JsonArray?)
-            : this(Chainr.fromSpec(Gson().fromJson(transformationSpecs, ArrayList::class.java)))
+    constructor(transformationSpecs: List<Any>?)
+            : this(Chainr.fromSpec(transformationSpecs))
 
     override fun transform(message: String): String {
         val transformedObject = chainr.transform(JsonUtils.jsonToObject(message)) ?: emptyMap<String, String>()

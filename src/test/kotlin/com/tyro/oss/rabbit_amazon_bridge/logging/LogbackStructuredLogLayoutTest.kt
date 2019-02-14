@@ -19,15 +19,13 @@ package com.tyro.oss.rabbit_amazon_bridge.logging
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.spi.LoggingEvent
-import com.google.gson.Gson
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.tyro.oss.randomdata.RandomString.randomString
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import java.lang.RuntimeException
 
 class LogbackStructuredLogLayoutTest {
-
 
     private fun randomLogLayout(artifactId: String? = randomString()) =
         LogbackStructuredLogLayout().apply {
@@ -47,7 +45,7 @@ class LogbackStructuredLogLayoutTest {
         val layout = randomLogLayout()
         val message = layout.doLayout(event)
 
-        val logEvent = Gson().fromJson(message, LogbackStructuredLogLayout.LogEventEnvelope::class.java)
+        val logEvent = jacksonObjectMapper().readValue(message, LogbackStructuredLogLayout.LogEventEnvelope::class.java)
         assertThat(logEvent.artifactId).isEqualTo(layout.artifactId)
         assertThat(logEvent.artifactVersion).isEqualTo(layout.artifactVersion)
         assertThat(logEvent.logType).isEqualTo(layout.logType)
@@ -65,7 +63,7 @@ class LogbackStructuredLogLayoutTest {
         val layout = randomLogLayout(null)
         val message = layout.doLayout(event)
 
-        val logEvent = Gson().fromJson(message, LogbackStructuredLogLayout.LogEventEnvelope::class.java)
+        val logEvent = jacksonObjectMapper().readValue(message, LogbackStructuredLogLayout.LogEventEnvelope::class.java)
         assertThat(logEvent.artifactId).isEqualTo("rabbit-amazon-bridge")
         assertThat(logEvent.artifactVersion).isEqualTo(layout.artifactVersion)
         assertThat(logEvent.logType).isEqualTo(layout.logType)
@@ -84,7 +82,7 @@ class LogbackStructuredLogLayoutTest {
         val layout = randomLogLayout()
         val message = layout.doLayout(event)
 
-        val logEvent = Gson().fromJson(message, LogbackStructuredLogLayout.LogErrorEventEnvelope::class.java)
+        val logEvent = jacksonObjectMapper().readValue(message, LogbackStructuredLogLayout.LogErrorEventEnvelope::class.java)
         assertThat(logEvent.artifactId).isEqualTo(layout.artifactId)
         assertThat(logEvent.artifactVersion).isEqualTo(layout.artifactVersion)
         assertThat(logEvent.logType).isEqualTo(layout.logType)

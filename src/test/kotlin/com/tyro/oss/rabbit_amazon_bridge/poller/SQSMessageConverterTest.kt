@@ -16,7 +16,7 @@
 
 package com.tyro.oss.rabbit_amazon_bridge.poller
 
-import com.google.gson.JsonParser
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.tyro.oss.randomdata.RandomString.*
 import com.tyro.oss.rabbit_amazon_bridge.forwarder.IncomingAwsMessage
 import org.assertj.core.api.Assertions.*
@@ -26,7 +26,20 @@ class SQSMessageConverterTest {
 
     private val randomPayload = randomNumericString()
 
-    private val messageBodyFromSNS =  "{ \"Type\" : \"Notification\",\n  \"MessageId\" : \"633b9507-ee50-57d6-8245-c6fe97b47e20\",\n  \"TopicArn\" : \"arn:aws:sns:ap-southeast-2:009938142092:lending-credit-risk-profile-updates\",\n  \"Message\" : \"{\\\"pbc\\\":0.1,\\\"lastModifiedDate\\\":\\\"2018-08-24T03:12:34.455Z\\\",\\\"pbcCrg\\\":9,\\\"effectiveCrg\\\":9,\\\"bid\\\":\\\"894a3099-cd49-4f84-bc53-c7b46bc11079\\\"}\",\n  \"Timestamp\" : \"2018-08-24T03:12:36.913Z\",\n  \"SignatureVersion\" : \"1\",\n  \"Signature\" : \"P0M5sgp4EC877neMJJWGKPQtswdopVzE8aOQy46CgOrqjwHYOhOYxWSG/RZNRsQKpTcMrmFgfLTGsBNzzv4trHBJ4/E73ck+gvKQhkCaM/WIP9PNOlWI5qINb2qFMUpTOxD1SJNf4qksMv368V74PajIYXbF1TdCAGm7X0mE0Gkz05UzMc1LoU93frv/itTsBuITkWv0oW6fDe6znNFk8y16bYKrCCNb6eRPTiW2wbO2T1iTP0HDN4a3kj0BP299Vrj3vGvMgyTPKaqvp2FYyDnz6t2HFVf+Sc+dbd+TaSMd3BdHHZBya8QiNdkF1ueMsmcNs479hFvIV6P7NgI3kQ==\",\n  \"SigningCertURL\" : \"https://sns.ap-southeast-2.amazonaws.com/SimpleNotificationService-ac565b8b1a6c5d002d285f9598aa1d9b.pem\",\n  \"UnsubscribeURL\" : \"https://sns.ap-southeast-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-southeast-2:009938142092:lending-credit-risk-profile-updates:cea14103-54cc-442a-baf3-cdff80c39d12\"\n}"
+    private val messageBodyFromSNS =  """
+        {
+          "Type" : "Notification",
+          "MessageId" : "633b9507-ee50-57d6-8245-c6fe97b47e20",
+          "TopicArn" : "asdfasdf",
+          "Message" : "{\"interest\":0.1,\"time\":\"2018-08-24T03:12:34.455Z\",\"value\":9,\"total\":9,\"uuid\":\"894a3099-cd49-4f84-bc53-c7b46bc11079\"}",
+          "Timestamp" : "2018-08-24T03:12:36.913Z",
+          "SignatureVersion" : "1",
+          "Signature" : "asfewradsf",
+          "SigningCertURL" : "http://blah.blah",
+          "UnsubscribeURL" : "http://blah/blag/unsubscribe"
+        }
+        """.trimIndent()
+
     private val messageBodyFromSQS = "{\"MyMessage\" : { \"payload\" :  \"$randomPayload\" } }"
 
     @Test
@@ -36,12 +49,12 @@ class SQSMessageConverterTest {
             messageId = randomUUID()
         }, randomString(), randomString())
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            assertThat(it.get("pbc").asString).isEqualTo("0.1")
-            assertThat(it.get("lastModifiedDate").asString).isEqualTo("2018-08-24T03:12:34.455Z")
-            assertThat(it.get("pbcCrg").asString).isEqualTo("9")
-            assertThat(it.get("effectiveCrg").asString).isEqualTo("9")
-            assertThat(it.get("bid").asString).isEqualTo("894a3099-cd49-4f84-bc53-c7b46bc11079")
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            assertThat(it.get("interest").asText()).isEqualTo("0.1")
+            assertThat(it.get("time").asText()).isEqualTo("2018-08-24T03:12:34.455Z")
+            assertThat(it.get("value").asText()).isEqualTo("9")
+            assertThat(it.get("total").asText()).isEqualTo("9")
+            assertThat(it.get("uuid").asText()).isEqualTo("894a3099-cd49-4f84-bc53-c7b46bc11079")
 
         }
     }
@@ -57,8 +70,8 @@ class SQSMessageConverterTest {
             messageId = randomMessageId
         }, prefix, messageIdKey)
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            val uniqueReference = it.get(messageIdKey).asString
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            val uniqueReference = it.get(messageIdKey).asText()
             assertThat(uniqueReference).isEqualTo("$prefix/$randomMessageId")
         }
     }
@@ -71,8 +84,8 @@ class SQSMessageConverterTest {
             messageId = randomUUID()
         }, prefix,  randomString())
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            assertThat(it.getAsJsonObject("MyMessage").get("payload").asString).isEqualTo(randomPayload)
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            assertThat(it.at("/MyMessage/payload").asText()).isEqualTo(randomPayload)
         }
     }
 
@@ -90,8 +103,8 @@ class SQSMessageConverterTest {
 
         val convertedMessage = SQSMessageConverter().convert(incomingMessage, prefix, messageIdKey)
 
-        JsonParser().parse(convertedMessage).asJsonObject.let {
-            val uniqueReference = it.get(messageIdKey).asString
+        jacksonObjectMapper().readTree(convertedMessage).let {
+            val uniqueReference = it.get(messageIdKey).asText()
             assertThat(uniqueReference).isEqualTo("$prefix/$randomMessageId")
         }
     }
@@ -109,6 +122,6 @@ class SQSMessageConverterTest {
 
         val convertedMessage = SQSMessageConverter().convert(incomingMessage, prefix, null)
 
-        assertThat(JsonParser().parse(convertedMessage)).isEqualTo(JsonParser().parse(messageBodyFromSQS))
+        assertThat(jacksonObjectMapper().readTree(convertedMessage)).isEqualTo(jacksonObjectMapper().readTree(messageBodyFromSQS))
     }
 }
