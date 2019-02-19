@@ -28,6 +28,7 @@ import org.springframework.retry.interceptor.RetryOperationsInterceptor
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit4.SpringRunner
+import kotlin.test.assertFailsWith
 
 @RunWith(SpringRunner::class)
 @RabbitAmazonBridgeSpringBootTest
@@ -69,7 +70,7 @@ class RabbitForwardingRetryDisabledIT {
 
     @Test
     fun `should not have a retry operations advice configured when retry is disabled`() {
-        assertThat(rabbitListenerContainerFactory.adviceChain).isNullOrEmpty()
+        assertThat(rabbitListenerContainerFactory.adviceChain).isNull()
     }
 
 }
