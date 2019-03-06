@@ -11,7 +11,7 @@ jobs:
 
 after_success:
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else exit 0 ; fi`
-  - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
+  - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
   - export REPO=tyro/rabbit-amazon-bridge
   - docker build -f Dockerfile.deploy -t $REPO:$COMMIT .
   - docker tag $REPO:$COMMIT $REPO:$TAG
