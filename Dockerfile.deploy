@@ -2,7 +2,7 @@ ARG BUILD_IMAGE
 FROM ${BUILD_IMAGE} AS build-image
 ARG TAG
 
-FROM repository.cd.tyrocorp.net/tyro/base-alpine-openjdk8-jre:latest
+FROM openjdk:8-alpine3.9
 MAINTAINER Tyro "open-source@tyro.com"
 
 WORKDIR /code
