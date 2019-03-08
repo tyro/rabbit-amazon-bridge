@@ -9,11 +9,9 @@ jobs:
       script:
       - make build
 
-after_success:
-  - export TAG=test-deploy-branch
-  - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-  - export REPO=tyro/rabbit-amazon-bridge
-  - docker build -f Dockerfile.deploy -t $REPO:$TRAVIS_COMMIT .
-  - docker tag $REPO:$TRAVIS_COMMIT $REPO:$TAG
-  - docker tag $REPO:$TRAVIS_COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
-  - docker push $REPO
+
+deploy:
+  provider: script
+  script: bash scripts/deploy.sh
+  on:
+    branch: 23_create_docker_release
