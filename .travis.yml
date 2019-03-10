@@ -9,9 +9,12 @@ jobs:
       script:
       - make build
 
-
 deploy:
-  provider: script
-  script: bash scripts/deploy.sh
-  on:
-    branch: 23_create_docker_release
+  - provider: script
+    script: bash scripts/deploy.sh 23_create_docker_release
+    on:
+      branch: 23_create_docker_release
+  - provider: script
+    script: bash scripts/deploy.sh $TRAVIS_TAG
+    on:
+      tags: true
