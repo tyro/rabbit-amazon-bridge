@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Profile
 
 
 @Configuration
-@Profile("test", "docker-integration-test")
+@Profile("test | docker-integration-test")
 class AWSSqsTestConfig {
 
     @Value("\${aws.sqs.endpoint.url}")
@@ -41,7 +41,8 @@ class AWSSqsTestConfig {
     @Value("\${aws.sqs.aws.region}")
     lateinit var sqsRegion: String
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
+    @Throws(Exception::class)
     fun amazonSQS(): AmazonSQSAsync = AmazonSQSBufferedAsyncClient(
                 AmazonSQSAsyncClientBuilder.standard()
                         .withCredentials(AWSStaticCredentialsProvider(BasicAWSCredentials("x", "x")))

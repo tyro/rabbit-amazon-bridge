@@ -19,9 +19,11 @@ package com.tyro.oss.rabbit_amazon_bridge.config
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.sqs.AmazonSQSAsync
+import com.amazonaws.services.sqs.AmazonSQSAsyncClient
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder
 import com.amazonaws.services.sqs.buffered.AmazonSQSBufferedAsyncClient
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean
 import org.springframework.cloud.aws.core.region.RegionProvider
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate
 import org.springframework.context.annotation.Bean
@@ -30,15 +32,17 @@ import org.springframework.context.annotation.Profile
 
 
 @Configuration
-@Profile("!test", "!docker-integration-test")
+@Profile("!(test | docker-integration-test)")
 class AWSSqsConfig {
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
+    @Throws(Exception::class)
     fun amazonSQS(
             @Autowired awsCredentialsProvider: AWSCredentialsProvider,
             @Autowired regionProvider: RegionProvider,
             @Autowired clientConfiguration: ClientConfiguration
-    ): AmazonSQSAsync = AmazonSQSBufferedAsyncClient(
+    ): AmazonSQSAsync =
+        AmazonSQSBufferedAsyncClient(
                 AmazonSQSAsyncClientBuilder.standard()
                         .withCredentials(awsCredentialsProvider)
                         .withClientConfiguration(clientConfiguration)
