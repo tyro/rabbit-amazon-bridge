@@ -19,11 +19,9 @@ package com.tyro.oss.rabbit_amazon_bridge.config
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.sqs.AmazonSQSAsync
-import com.amazonaws.services.sqs.AmazonSQSAsyncClient
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder
 import com.amazonaws.services.sqs.buffered.AmazonSQSBufferedAsyncClient
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cloud.aws.core.config.AmazonWebserviceClientFactoryBean
 import org.springframework.cloud.aws.core.region.RegionProvider
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate
 import org.springframework.context.annotation.Bean
