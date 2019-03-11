@@ -11,9 +11,9 @@ jobs:
 
 deploy:
   - provider: script
-    script: bash scripts/deploy.sh 23_create_docker_release
+    script: bash scripts/deploy.sh latest
     on:
-      branch: 23_create_docker_release
+      branch: master
   - provider: script
     script: bash scripts/deploy.sh $TRAVIS_TAG
     on:
