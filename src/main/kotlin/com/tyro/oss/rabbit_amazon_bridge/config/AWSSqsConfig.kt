@@ -30,15 +30,17 @@ import org.springframework.context.annotation.Profile
 
 
 @Configuration
-@Profile("!test", "!docker-integration-test")
+@Profile("!(test | docker-integration-test)")
 class AWSSqsConfig {
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
+    @Throws(Exception::class)
     fun amazonSQS(
             @Autowired awsCredentialsProvider: AWSCredentialsProvider,
             @Autowired regionProvider: RegionProvider,
             @Autowired clientConfiguration: ClientConfiguration
-    ): AmazonSQSAsync = AmazonSQSBufferedAsyncClient(
+    ): AmazonSQSAsync =
+        AmazonSQSBufferedAsyncClient(
                 AmazonSQSAsyncClientBuilder.standard()
                         .withCredentials(awsCredentialsProvider)
                         .withClientConfiguration(clientConfiguration)
