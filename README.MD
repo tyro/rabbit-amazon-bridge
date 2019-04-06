@@ -10,7 +10,7 @@ To run rabbit-amazon-bridge:
 
 ```bash
 java -Dspring.profiles.active=<your-profile(s)> \
-     -classpath <path-to-your-properties-and-bridge-configs>:rabbit-amazon-bridge-0.8.0-deployable.jar org.springframework.boot.loader.JarLauncher
+     -classpath <path-to-your-properties-and-bridge-configs>:rabbit-amazon-bridge-0.10.0-deployable.jar org.springframework.boot.loader.JarLauncher
 ```
 
 
@@ -153,8 +153,8 @@ spring.rabbitmq.ssl.trust-store-password=<truststore-pass>
 
 #### Want to set your server ports?
 ```properties
-server.port=8963
-management.server.port=8960
+server.port=8080
+management.server.port=8083
 ```
 
 #### Make your server run SSL
