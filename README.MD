@@ -4,18 +4,25 @@
 
 The rabbit-amazon-bridge is a service that helps us route rabbit messages from on-premise applications to and from services running in Amazon.
 
-## Bridge Setup
+## Running the bridge
 
-To run rabbit-amazon-bridge:
+Directly using Java
 
 ```bash
 java -Dspring.profiles.active=<your-profile(s)> \
-     -classpath <path-to-your-properties-and-bridge-configs>:rabbit-amazon-bridge-0.10.0-deployable.jar org.springframework.boot.loader.JarLauncher
+     -classpath <path-to-your-properties-and-bridge-configs>:rabbit-amazon-bridge-<version>-deployable.jar org.springframework.boot.loader.JarLauncher
 ```
 
+Using the pre-built docker iamge
+
+```bash
+docker run -p 8080:8080 \
+    -v "<path-to-your-resources>:/app/extra-config \
+    tyro/rabbit-amazon-bridge:<version> \
+    --spring.profiles.active=<your-profile(s)>
+```
 
 ### Mandatory properties
-
 ```properties
 spring.rabbitmq.host=localhost
 spring.rabbitmq.port=5672
@@ -26,15 +33,15 @@ cloud.aws.credentials.accessKey=<your aws secret key>
 cloud.aws.credentials.secretKey=<your aws access key>
 cloud.aws.region.static=us-east-1
 bridge.config.location=classpath:bridge-config.json,file:/opt/rabbit-bridge/some-other-config.json
-
 ```
+
 ### The bridge configuration
 Multiple bridge configuration files can be provided to the application using the `bridge.config.location` property.
 
-See the example below for details of how they look. 
+See the example below for details of how they look.
 The transformationSpecs are based on the [Jolt](https://github.com/bazaarvoice/jolt) library.
-We mostly for shifting (which we use to strip out sensitive fields) and/or field renaming operations but you can do more advanced data transformation. 
- 
+We mostly for shifting (which we use to strip out sensitive fields) and/or field renaming operations but you can do more advanced data transformation.
+
 
 ```json
 [
@@ -96,13 +103,41 @@ We mostly for shifting (which we use to strip out sensitive fields) and/or field
 ]
 ```
 
-#### Bridge Properties
+#### Bridge JSON
 
 field | description
 -------|------------
 from | The endpoint messages will be received from, currently SQS, or Rabbit
 to | The endpoint to route messages to, current rabbit -> SQS or SNS, or SQS -> Rabbit
 shouldForwardMessages | Tells the application not to configure the bridge, disabling it.
+
+##### Rabbit From Fields
+
+field | description
+-------|------------
+exchange | The name of the exchange to read from
+queueName | The name of the queue that rabbit-amazon-bridge will bind to that exchange
+routingKey | A single topic key that rabbit-amazon-bridge will be bound to that exchange/queue
+
+##### Rabbit To Fields
+
+field | description
+-------|------------
+exchange | The name of the exchange messages will be sent to
+routingKey | A single topic that will be used when sending the message when sent to that exchange
+
+##### SNS / SQS To Fields
+
+field | description
+-------|------------
+name | The name of the queue / topic being sent to
+
+##### SQS From fields
+
+field | description
+-------|------------
+name | The name of the queue / topic being listened on
+
 
 ### Customised properties
 We've added a few custom properties
@@ -168,45 +203,34 @@ server.ssl.trust-store=file:/opt/tyro/ssl/truststore.jks
 Refer to [Common application properties](https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html)
 We will cheekily suggest applying common sense. We don't use hibernate in this project for example. 
 
-# Development
-## Regular local builds
+## Development
+
+### Regular local builds
 
 Run 
 ```bash
 ./mvnw clean install
 ```
 
-### Dependencies
-
-* Docker
-* Java 8 or higher 
-
-## Docker builds
-
-Run 
-```bash
-make build
-```
-
-### Explanation of key make targets
+### Make targets
 
 Target | Explanation
 -------|------------
 build-image | Creates a container for running builds in
 test-unit | runs the unit tests against the latest build image
 test-integration | runs the integration tests against the current build image
-build | Runs build-image test-unit and test-integration in one go
+build | Runs build-image test-unit and test-integration in one go using docker
 
 ### Dependencies
 
 * Docker
-* Linux or Mac (for the make commands) 
+* Java 8 or higher
+* Linux or Mac (Have yet to try it on Windows)
 
-## Running a local services for manual testing
+### Running a local services for manual testing
 To start a local rabbit node and local elasticmq service for manual testing
 
-
-### Rabbit
+#### Rabbit
 Run:
 ```bash
 ./docker-services-up.sh
@@ -217,7 +241,7 @@ Go to: [http://localhost:15672/](http://localhost:15672/)
 username: guest
 password: guest
 
-### elastimq
+#### elastimq
 
 Assuming you have the aws command lines tools installed:
 
