@@ -322,6 +322,13 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
         </dependency>
+        <!-- Pinned version to prevent CVE-2019-0232 and CVE-2019-0199.
+        Kepe this pinned until spring-boot-starter-tomcat brings in a non-vulnerable version (9.0.19+)-->
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>9.0.19</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
