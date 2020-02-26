@@ -18,14 +18,14 @@ package com.tyro.oss.rabbit_amazon_bridge.monitoring
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import org.springframework.boot.actuate.health.Health
+import org.springframework.boot.actuate.health.CompositeHealth
 
-class HealthTypeAdapter : StdSerializer<Health>(Health::class.java) {
-    override fun serialize(src: Health, gen: JsonGenerator, provider: SerializerProvider) {
+class CompositeHealthTypeAdapter : StdSerializer<CompositeHealth>(CompositeHealth::class.java) {
+    override fun serialize(src: CompositeHealth, gen: JsonGenerator, provider: SerializerProvider) {
         gen.writeStartObject()
         src.status.code.let { gen.writeStringField("status", it) }
         src.status.description.takeIf {  it.isNotEmpty() }?.let { gen.writeStringField("description", it) }
-        src.details.forEach { (key, value) ->
+        src.components.forEach { (key, value) ->
             gen.writeObjectField(key, value)
         }
         gen.writeEndObject()
