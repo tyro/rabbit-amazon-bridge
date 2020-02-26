@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.fasterxml.jackson.databind.node.NullNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -36,7 +38,7 @@ class HealthTypeAdapterTest {
 
     @Test
     fun `should be able to convert null values`() {
-        assertThat(mapper.valueToTree<JsonNode>(null)).isEqualTo(null)
+        assertThat(mapper.valueToTree<JsonNode>(null)).isEqualTo(NullNode.instance)
     }
 
     @Test
@@ -104,12 +106,13 @@ class HealthTypeAdapterTest {
 
     @Test
     fun `should be able to convert nested health checks`() {
+        // as of spring boot 2.2.x this wont be used as type CompositeHealth is now used to represent nested health checks
         val health = Health.Builder()
                 .status("DOWN")
                 .withDetail("db", Health.Builder().status(Status.UP).build())
                 .build()
 
-        val expected = JsonNodeFactory.instance.objectNode()
+        val expected : JsonNode = JsonNodeFactory.instance.objectNode()
                 .put("status", "DOWN")
                 .set("db", JsonNodeFactory.instance.objectNode().put("status", "UP"))
 

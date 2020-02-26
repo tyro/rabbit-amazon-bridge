@@ -19,9 +19,11 @@ package com.tyro.oss.rabbit_amazon_bridge.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.tyro.oss.rabbit_amazon_bridge.monitoring.CompositeHealthTypeAdapter
 import com.tyro.oss.rabbit_amazon_bridge.monitoring.HealthTypeAdapter
 import com.tyro.oss.rabbit_amazon_bridge.poller.SQSPollersConfigurer
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.actuate.health.CompositeHealth
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -42,6 +44,7 @@ class MainConfig {
         registerModule(KotlinModule())
         val module = SimpleModule()
         module.addSerializer(Health::class.java, HealthTypeAdapter())
+        module.addSerializer(CompositeHealth::class.java, CompositeHealthTypeAdapter())
         registerModule(module)
     }
 
@@ -52,5 +55,5 @@ class MainConfig {
     @Bean
     @ConditionalOnMissingBean(name = ["artifactVersion"])
     fun artifactVersion(@Value("\${artifact.version:undefined}") artifactVersion: String) = artifactVersion
-    
+
 }

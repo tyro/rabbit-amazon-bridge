@@ -45,7 +45,7 @@ abstract class HealthStatusITBase {
             createRestTemplate()
                     .getForEntity("http://localhost:$port/rabbit-amazon-bridge/health", String::class.java)
 
-    protected fun valueAt(path: String, entity: ResponseEntity<String>) =
+    protected fun valueAt(path: String, entity: ResponseEntity<String>) : String? =
             ObjectMapper().readTree(entity.body).at(path).textValue()
 
     protected fun createRestTemplate(): TestRestTemplate {
@@ -91,7 +91,7 @@ class HealthStatusFlatteningDisabledIT : HealthStatusITBase() {
         val entity = getHealthStatus(port)
 
         Assertions.assertThat(entity.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(valueAt("/details/rabbit/status", entity)).isEqualTo("UP")
+        assertThat(valueAt("/components/rabbit/status", entity)).isEqualTo("UP")
     }
 
 }
