@@ -34,9 +34,9 @@ class TaskSchedulerConfigTest {
                             isAccessible = true
                             assertThat(get(it) as Boolean).isTrue()
                         }
-                        getDeclaredField("awaitTerminationSeconds").apply {
+                        getDeclaredField("awaitTerminationMillis").apply {
                             isAccessible = true
-                            assertThat(get(it) as Int).isEqualTo(30)
+                            assertThat(get(it) as Long).isEqualTo(30_000)
                         }
                     }
                 }
