@@ -22,3 +22,6 @@ clean-docker:
 	-docker stop rabbit-amazon-bridge
 	-docker rm rabbit-amazon-bridge
 	-docker rmi rabbit-amazon-bridge
+
+release:
+	./mvnw release:prepare
