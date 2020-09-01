@@ -20,7 +20,7 @@
 
     <groupId>com.tyro.oss</groupId>
     <artifactId>rabbit-amazon-bridge</artifactId>
-    <version>0.14.1</version>
+    <version>0.14.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
