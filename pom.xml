@@ -61,7 +61,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <spring-cloud.version>2.2.1.RELEASE</spring-cloud.version>
+        <spring-cloud.version>2.2.4.RELEASE</spring-cloud.version>
         <start-class>com.tyro.oss.rabbit_amazon_bridge.RabbitAmazonBridgeApplicationKt</start-class>
         <logback.version>1.2.3</logback.version>
         <guava.version>25.0-jre</guava.version>
