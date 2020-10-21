@@ -83,7 +83,7 @@
                 <skip.surefire.tests>false</skip.surefire.tests>
                 <skip.docker.startup>false</skip.docker.startup>
                 <skip.javadoc.generation>false</skip.javadoc.generation>
-                <skip.sources.generation>true</skip.sources.generation>
+                <skip.sources.generation>false</skip.sources.generation>
                 <spring.profiles.active>test</spring.profiles.active>
             </properties>
             <activation>
