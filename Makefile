@@ -1,19 +1,16 @@
-build-image:
-	docker build --tag tyro/rabbit-amazon-bridge-build -f Dockerfile.build .
+install:
+	./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
-deploy-image:
-	docker build -f Dockerfile.deploy -t tyro/rabbit-amazon-bridge:latest . \
-	--build-arg BUILD_IMAGE=tyro/rabbit-amazon-bridge-build:latest
+build-docker: build
+	docker build -t tyro/rabbit-amazon-bridge:latest .
 
 test-unit:
-	export DOCKER_BUILD_IMAGE=tyro/rabbit-amazon-bridge-build:latest && \
-	docker-compose -f docker-compose-test-unit.yml up --exit-code-from sut
+	./mvnw test -B -P unit-tests
 
 test-integration:
-	export DOCKER_BUILD_IMAGE=tyro/rabbit-amazon-bridge-build:latest && \
-	docker-compose -f docker-compose-test-integration.yml up --exit-code-from sut
+	./mvnw verify -B
 
-build: build-image test-unit test-integration
+build: install test-unit test-integration
 
 debug-build:
 	docker run --rm -it tyro/rabbit-amazon-bridge-build:latest bash

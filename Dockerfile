@@ -1,14 +1,10 @@
-ARG BUILD_IMAGE
-FROM ${BUILD_IMAGE} AS build-image
-ARG TAG
-
 FROM openjdk:8-alpine3.9
 MAINTAINER Tyro "open-source@tyro.com"
 
 WORKDIR /code
 
 RUN mkdir -p /app
-COPY --from=build-image /code/target/rabbit-amazon-bridge-*-deployable.jar /app/rabbit-amazon-bridge.jar
+COPY /target/rabbit-amazon-bridge-*-deployable.jar /app/rabbit-amazon-bridge.jar
 
 EXPOSE 8080
 

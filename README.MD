@@ -216,10 +216,10 @@ Run
 
 Target | Explanation
 -------|------------
-build-image | Creates a container for running builds in
-test-unit | runs the unit tests against the latest build image
-test-integration | runs the integration tests against the current build image
-build | Runs build-image test-unit and test-integration in one go using docker
+install | Compiles, packages and installs but skips tests
+test-unit | runs the unit tests
+test-integration | runs the integration tests
+build | Runs install, test-unit, test-integration in one go
 
 ### Dependencies
 
